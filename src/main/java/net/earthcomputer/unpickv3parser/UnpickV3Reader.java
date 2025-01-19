@@ -53,7 +53,9 @@ public final class UnpickV3Reader implements AutoCloseable {
     private int lastTokenColumn;
     private TokenType lastTokenType;
     private String nextToken;
+    private ParseState nextTokenState;
     private String nextToken2;
+    private ParseState nextToken2State;
 
     public UnpickV3Reader(Reader reader) {
         this.reader = new LineNumberReader(reader);
@@ -273,6 +275,7 @@ public final class UnpickV3Reader implements AutoCloseable {
                 default:
                     break parseLoop;
             }
+            nextToken(); // consume the operator
 
             int ourPrecedence = PRECEDENCES.get(operator);
             while (!operatorStack.isEmpty() && ourPrecedence < PRECEDENCES.get(operatorStack.peek())) {
@@ -365,6 +368,10 @@ public final class UnpickV3Reader implements AutoCloseable {
         String fieldName = nextToken(TokenType.IDENTIFIER);
         String fieldDesc = nextToken(TokenType.FIELD_DESCRIPTOR);
         String groupName = nextToken(TokenType.IDENTIFIER);
+        String token = nextToken();
+        if (lastTokenType != TokenType.NEWLINE && lastTokenType != TokenType.EOF) {
+            throw expectedTokenError("'\n'", token);
+        }
         return new TargetField(className, fieldName, fieldDesc, groupName);
     }
 
@@ -633,38 +640,30 @@ public final class UnpickV3Reader implements AutoCloseable {
     // region Tokenizer
 
     private TokenType peekTokenType() throws IOException {
-        int line = lastTokenLine;
-        int column = lastTokenColumn;
-        TokenType tokenType = lastTokenType;
+        ParseState state = new ParseState(this);
         nextToken = nextToken();
-        TokenType nextTokenType = lastTokenType;
-        lastTokenLine = line;
-        lastTokenColumn = column;
-        lastTokenType = tokenType;
-        return nextTokenType;
+        nextTokenState = new ParseState(this);
+        state.restore(this);
+        return nextTokenState.lastTokenType;
     }
 
     private String peekToken() throws IOException {
-        int line = lastTokenLine;
-        int column = lastTokenColumn;
-        TokenType tokenType = lastTokenType;
+        ParseState state = new ParseState(this);
         nextToken = nextToken();
-        lastTokenLine = line;
-        lastTokenColumn = column;
-        lastTokenType = tokenType;
+        nextTokenState = new ParseState(this);
+        state.restore(this);
         return nextToken;
     }
 
     private String peekToken2() throws IOException {
-        int line = lastTokenLine;
-        int column = lastTokenColumn;
-        TokenType tokenType = lastTokenType;
+        ParseState state = new ParseState(this);
         String nextToken = nextToken();
+        ParseState nextTokenState = new ParseState(this);
         nextToken2 = nextToken();
+        nextToken2State = new ParseState(this);
         this.nextToken = nextToken;
-        lastTokenLine = line;
-        lastTokenColumn = column;
-        lastTokenType = tokenType;
+        this.nextTokenState = nextTokenState;
+        state.restore(this);
         return nextToken2;
     }
 
@@ -696,6 +695,9 @@ public final class UnpickV3Reader implements AutoCloseable {
             String tok = nextToken;
             nextToken = nextToken2;
             nextToken2 = null;
+            nextTokenState.restore(this);
+            nextTokenState = nextToken2State;
+            nextToken2State = null;
             return tok;
         }
 
@@ -703,7 +705,10 @@ public final class UnpickV3Reader implements AutoCloseable {
             return null;
         }
 
-        // newline token (skipping comment)
+        // newline token (skipping comment and whitespace)
+        while (column < line.length() && Character.isWhitespace(line.charAt(column))) {
+            column++;
+        }
         if (column < line.length() && line.charAt(column) == '#') {
             column = line.length();
         }
@@ -840,7 +845,7 @@ public final class UnpickV3Reader implements AutoCloseable {
                 return false;
         }
 
-        lastTokenType = TokenType.OPERATOR;
+        lastTokenType = TokenType.FIELD_DESCRIPTOR;
         return true;
     }
 
@@ -988,9 +993,9 @@ public final class UnpickV3Reader implements AutoCloseable {
 
         do {
             column++;
-        } while (isIdentifierChar(line.charAt(column)));
+        } while (column < line.length() && isIdentifierChar(line.charAt(column)));
 
-        lastTokenType = TokenType.INTEGER;
+        lastTokenType = TokenType.IDENTIFIER;
         return true;
     }
 
@@ -1091,6 +1096,24 @@ public final class UnpickV3Reader implements AutoCloseable {
     @Override
     public void close() throws IOException {
         reader.close();
+    }
+
+    private static class ParseState {
+        private final int lastTokenLine;
+        private final int lastTokenColumn;
+        private final TokenType lastTokenType;
+
+        ParseState(UnpickV3Reader reader) {
+            this.lastTokenLine = reader.lastTokenLine;
+            this.lastTokenColumn = reader.lastTokenColumn;
+            this.lastTokenType = reader.lastTokenType;
+        }
+
+        void restore(UnpickV3Reader reader) {
+            reader.lastTokenLine = lastTokenLine;
+            reader.lastTokenColumn = lastTokenColumn;
+            reader.lastTokenType = lastTokenType;
+        }
     }
 
     private enum TokenType {
