@@ -691,7 +691,7 @@ public final class UnpickV3Reader implements AutoCloseable {
     }
 
     private String nextTokenInner(@Nullable TokenType typeHint) throws IOException {
-        if (nextToken != null) {
+        if (nextTokenState != null) {
             String tok = nextToken;
             nextToken = nextToken2;
             nextToken2 = null;
