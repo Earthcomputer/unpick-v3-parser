@@ -1000,12 +1000,12 @@ public final class UnpickV3Reader implements AutoCloseable {
         }
         column++;
 
-        boolean firstChar = true;
+        boolean seenChar = false;
         while (column < line.length() && line.charAt(column) != quoteChar) {
-            if (singleChar && !firstChar) {
+            if (singleChar && seenChar) {
                 throw parseErrorInToken("Multiple characters in char literal");
             }
-            firstChar = false;
+            seenChar = true;
 
             if (line.charAt(column) == '\\') {
                 column++;
@@ -1048,6 +1048,10 @@ public final class UnpickV3Reader implements AutoCloseable {
 
         if (column == line.length()) {
             throw parseErrorInToken("Unexpected end of string");
+        }
+
+        if (singleChar && !seenChar) {
+            throw parseErrorInToken("No character in char literal");
         }
 
         return true;
