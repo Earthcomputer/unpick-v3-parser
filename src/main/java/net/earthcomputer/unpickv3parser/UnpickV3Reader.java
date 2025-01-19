@@ -64,7 +64,7 @@ public final class UnpickV3Reader implements AutoCloseable {
     public void accept(UnpickV3Visitor visitor) throws IOException {
         line = reader.readLine();
         if (!"unpick v3".equals(line)) {
-            throw parseError("Missing version marker");
+            throw parseError("Missing version marker", 1, 0);
         }
         column = line.length();
 
