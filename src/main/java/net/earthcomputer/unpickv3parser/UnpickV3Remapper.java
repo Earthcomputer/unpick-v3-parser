@@ -11,26 +11,32 @@ import net.earthcomputer.unpickv3parser.tree.expr.Expression;
 import net.earthcomputer.unpickv3parser.tree.expr.ExpressionRemapper;
 import net.earthcomputer.unpickv3parser.tree.expr.FieldExpression;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 public class UnpickV3Remapper extends UnpickV3Visitor {
     private final UnpickV3Remapper downstream;
+    private final Map<String, List<String>> classesInPackage;
     private final Map<String, String> classMappings;
     private final Map<FieldKey, String> fieldMappings;
     private final Map<MethodKey, String> methodMappings;
 
     /**
-     * Warning: class names use "." format, not "/" format
+     * Warning: class names use "." format, not "/" format. {@code classesInPackage} should contain all the classes in
+     * each package, including unmapped ones. The classes in this map are unqualified by the package name (because the
+     * package name is already in the key of the map entry).
      */
     public UnpickV3Remapper(
         UnpickV3Remapper downstream,
+        Map<String, List<String>> classesInPackage,
         Map<String, String> classMappings,
         Map<FieldKey, String> fieldMappings,
         Map<MethodKey, String> methodMappings
     ) {
         this.downstream = downstream;
+        this.classesInPackage = classesInPackage;
         this.classMappings = classMappings;
         this.fieldMappings = fieldMappings;
         this.methodMappings = methodMappings;
@@ -38,22 +44,34 @@ public class UnpickV3Remapper extends UnpickV3Visitor {
 
     @Override
     public void visitGroupDefinition(GroupDefinition groupDefinition) {
-        GroupScope scope = groupDefinition.scope;
-        if (scope instanceof GroupScope.Class) {
-            scope = new GroupScope.Class(mapClassName(groupDefinition.name));
-        } else if (scope instanceof GroupScope.Method) {
-            GroupScope.Method methodScope = (GroupScope.Method) scope;
+        GroupScope oldScope = groupDefinition.scope;
+        List<GroupScope> scopes;
+        if (oldScope instanceof GroupScope.Global) {
+            scopes = Collections.singletonList(oldScope);
+        } else if (oldScope instanceof GroupScope.Package) {
+            String pkg = ((GroupScope.Package) oldScope).packageName;
+            scopes = classesInPackage.getOrDefault(pkg, Collections.emptyList()).stream()
+                .map(cls -> new GroupScope.Class(mapClassName(pkg + "." + cls)))
+                .collect(Collectors.toList());
+        } else if (oldScope instanceof GroupScope.Class) {
+            scopes = Collections.singletonList(new GroupScope.Class(mapClassName(groupDefinition.name)));
+        } else if (oldScope instanceof GroupScope.Method) {
+            GroupScope.Method methodScope = (GroupScope.Method) oldScope;
             String className = mapClassName(methodScope.className);
             String methodName = mapMethodName(methodScope.className, methodScope.methodName, methodScope.methodDesc);
             String methodDesc = mapDescriptor(methodScope.methodDesc);
-            scope = new GroupScope.Method(className, methodName, methodDesc);
+            scopes = Collections.singletonList(new GroupScope.Method(className, methodName, methodDesc));
+        } else {
+            throw new AssertionError("Unknown group scope type: " + oldScope.getClass().getName());
         }
 
         List<GroupConstant> constants = groupDefinition.constants.stream()
             .map(constant -> new GroupConstant(constant.key, constant.value.remap(new ExprRemapper(groupDefinition.dataType))))
             .collect(Collectors.toList());
 
-        downstream.visitGroupDefinition(new GroupDefinition(scope, groupDefinition.type, groupDefinition.strict, groupDefinition.dataType, groupDefinition.name, constants, groupDefinition.format));
+        for (GroupScope scope : scopes) {
+            downstream.visitGroupDefinition(new GroupDefinition(scope, groupDefinition.type, groupDefinition.strict, groupDefinition.dataType, groupDefinition.name, constants, groupDefinition.format));
+        }
     }
 
     @Override
