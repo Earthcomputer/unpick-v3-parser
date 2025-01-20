@@ -1059,12 +1059,12 @@ public final class UnpickV3Reader implements AutoCloseable {
         if (column == line.length()) {
             throw parseErrorInToken("Unexpected end of string");
         }
-        column++;
 
         if (singleChar && !seenChar) {
             throw parseErrorInToken("No character in char literal");
         }
 
+        column++;
         return true;
     }
 
