@@ -286,6 +286,9 @@ public final class UnpickV3Writer extends UnpickV3Visitor {
         @Override
         public void visitFieldExpression(FieldExpression fieldExpression) {
             output.append(fieldExpression.className).append('.').append(fieldExpression.fieldName);
+            if (!fieldExpression.isStatic) {
+                output.append(":instance");
+            }
             if (fieldExpression.fieldType != null) {
                 output.append(':');
                 writeDataType(fieldExpression.fieldType);
