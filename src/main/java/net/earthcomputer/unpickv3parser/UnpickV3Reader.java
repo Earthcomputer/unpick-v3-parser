@@ -329,7 +329,7 @@ public final class UnpickV3Reader implements AutoCloseable {
                 return new LiteralExpression(new Literal.Integer(negative ? -parsedInt.value : parsedInt.value, parsedInt.radix));
             case LONG:
                 ParsedLong parsedLong = parseLong(token, negative);
-                return new LiteralExpression(new Literal.Long(parsedLong.value, parsedLong.radix));
+                return new LiteralExpression(new Literal.Long(negative ? -parsedLong.value : parsedLong.value, parsedLong.radix));
             case FLOAT:
                 float parsedFloat = parseFloat(token, negative);
                 return new LiteralExpression(new Literal.Float(negative ? -parsedFloat : parsedFloat));
@@ -515,6 +515,10 @@ public final class UnpickV3Reader implements AutoCloseable {
     }
 
     private ParsedLong parseLong(String string, boolean negative) throws UnpickParseException {
+        if (string.endsWith("l") || string.endsWith("L")) {
+            string = string.substring(0, string.length() - 1);
+        }
+
         int radix;
         if (string.startsWith("0x") || string.startsWith("0X")) {
             radix = 16;
