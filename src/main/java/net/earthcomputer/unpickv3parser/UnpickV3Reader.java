@@ -628,7 +628,7 @@ public final class UnpickV3Reader implements AutoCloseable {
                         while (count < maxCount && (c = string.charAt(i + count)) >= '0' && c <= '7') {
                             count++;
                         }
-                        result.append((char) Integer.parseInt(string.substring(i, i + count)));
+                        result.append((char) Integer.parseInt(string.substring(i, i + count), 8));
                         i += count - 1;
                         break;
                     default:
@@ -1042,6 +1042,7 @@ public final class UnpickV3Reader implements AutoCloseable {
                         column++;
                         break;
                     case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7':
+                        column++;
                         int maxOctalDigits = c <= '3' ? 3 : 2;
                         for (int i = 1; i < maxOctalDigits && column < line.length() && (c = line.charAt(column)) >= '0' && c <= '7'; i++) {
                             column++;
