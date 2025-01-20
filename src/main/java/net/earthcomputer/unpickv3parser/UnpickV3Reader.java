@@ -354,13 +354,22 @@ public final class UnpickV3Reader implements AutoCloseable {
         String fieldName = className.substring(dotIndex + 1);
         className = className.substring(0, dotIndex);
 
+        boolean isStatic = true;
         DataType fieldType = null;
         if (":".equals(peekToken())) {
             nextToken();
-            fieldType = parseDataType();
+            if ("instance".equals(peekToken())) {
+                nextToken();
+                if (":".equals(peekToken())) {
+                    nextToken();
+                    fieldType = parseDataType();
+                }
+            } else {
+                fieldType = parseDataType();
+            }
         }
 
-        return new FieldExpression(className, fieldName, fieldType);
+        return new FieldExpression(className, fieldName, fieldType, isStatic);
     }
 
     private TargetField parseTargetField() throws IOException {

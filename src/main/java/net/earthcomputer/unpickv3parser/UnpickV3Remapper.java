@@ -191,7 +191,7 @@ public class UnpickV3Remapper extends UnpickV3Visitor {
 
             String className = mapClassName(fieldExpression.className);
             String fieldName = mapFieldName(fieldExpression.className, fieldExpression.fieldName, fieldDesc);
-            return new FieldExpression(className, fieldName, fieldExpression.fieldType);
+            return new FieldExpression(className, fieldName, fieldExpression.fieldType, fieldExpression.isStatic);
         }
     }
 }

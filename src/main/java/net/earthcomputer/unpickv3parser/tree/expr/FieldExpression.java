@@ -8,11 +8,13 @@ public final class FieldExpression extends Expression {
     public final String fieldName;
     @Nullable
     public final DataType fieldType;
+    public final boolean isStatic;
 
-    public FieldExpression(String className, String fieldName, @Nullable DataType fieldType) {
+    public FieldExpression(String className, String fieldName, @Nullable DataType fieldType, boolean isStatic) {
         this.className = className;
         this.fieldName = fieldName;
         this.fieldType = fieldType;
+        this.isStatic = isStatic;
     }
 
     @Override
