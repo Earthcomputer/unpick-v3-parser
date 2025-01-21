@@ -141,6 +141,9 @@ public final class UnpickV3Reader implements AutoCloseable {
         }
 
         DataType dataType = parseDataType();
+        if (!isDataTypeValidInGroup(dataType)) {
+            throw parseError("Data type not allowed in group: " + dataType);
+        }
 
         String name = peekTokenType() == TokenType.IDENTIFIER ? nextToken() : null;
 
@@ -179,6 +182,10 @@ public final class UnpickV3Reader implements AutoCloseable {
         }
 
         return new GroupDefinition(scope, type, strict, dataType, name, constants, format);
+    }
+
+    private static boolean isDataTypeValidInGroup(DataType type) {
+        return type == DataType.INT || type == DataType.LONG || type == DataType.FLOAT || type == DataType.DOUBLE || type == DataType.STRING;
     }
 
     private GroupFormat parseGroupFormat() throws IOException {
