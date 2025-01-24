@@ -1,0 +1,14 @@
+unpick v3
+
+const float
+ 0 = 0
+    1 = 0
+  2 = 0
+
+	3 = 0 # comment
+ 	4 = 0
+
+# comment
+
+ 	 5 = 0
+

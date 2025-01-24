@@ -1,0 +1,49 @@
+unpick v3
+const int
+const int
+    0 = 0
+const strict int g
+    0 = 0
+const long
+    0 = 0
+const long g
+    '\0' = 0
+const float
+    0 = 0
+    1.0 = 1.0
+const float g
+    '\0' = 0
+    1.0 = 1.0
+const double
+    0 = 0
+    1.0 = 1.0
+const double g
+    0 = 0
+    1.0 = 1.0
+const String
+    "" = ""
+const String g
+    "" = ""
+flag int g
+    0 = 0
+flag long g
+    0 = 0
+const int a
+    format = decimal
+const long b
+    format = hex
+const int c
+    format = binary
+const long d
+    format = octal
+const int e
+    format = char
+const long f
+    format = decimal
+    0 = 0
+scoped package foo.bar const int
+    0 = 0
+scoped class foo.Bar const int
+    0 = 0
+scoped method foo.Bar baz ()V const int
+    0 = 0

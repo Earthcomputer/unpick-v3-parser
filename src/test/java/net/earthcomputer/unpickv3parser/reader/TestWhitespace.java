@@ -1,0 +1,56 @@
+package net.earthcomputer.unpickv3parser.reader;
+
+import net.earthcomputer.unpickv3parser.tree.TargetField;
+import net.earthcomputer.unpickv3parser.tree.UnpickV3Visitor;
+import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+public final class TestWhitespace {
+    @Test
+    public void testBlankLines() throws IOException {
+        checkTargetFields("whitespace/blank_lines", 1);
+    }
+
+    @Test
+    public void testComments() throws IOException {
+        checkTargetFields("whitespace/comments", 2);
+    }
+
+    @Test
+    public void testIndent() throws IOException {
+        TestReader.test("whitespace/indent");
+    }
+
+    @Test
+    public void testCommentOnFirstLine() throws IOException {
+        TestReader.assertThrowsParseError("whitespace/invalid/comment_on_first_line", 1, 1);
+    }
+
+    @Test
+    public void testWhitespaceBeforeFirstLine() throws IOException {
+        TestReader.assertThrowsParseError("whitespace/invalid/whitespace_before_first_line", 1, 1);
+    }
+
+    @Test
+    public void testInvalidIndent() throws IOException {
+        TestReader.assertThrowsParseError("whitespace/invalid/indent", 3, 1);
+    }
+
+    private static void checkTargetFields(String file, int expectedCount) throws IOException {
+        int[] targetFieldCount = {0};
+        TestReader.test(file, new UnpickV3Visitor() {
+            @Override
+            public void visitTargetField(TargetField targetField) {
+                assertEquals("foo.Bar", targetField.className);
+                assertEquals("baz", targetField.fieldName);
+                assertEquals("I", targetField.fieldDesc);
+                assertEquals("g", targetField.groupName);
+                targetFieldCount[0]++;
+            }
+        });
+        assertEquals(expectedCount, targetFieldCount[0]);
+    }
+}
