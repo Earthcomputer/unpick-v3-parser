@@ -433,6 +433,7 @@ public final class UnpickV3Reader implements AutoCloseable {
             nextToken();
             if ("instance".equals(peekToken())) {
                 nextToken();
+                isStatic = false;
                 if (":".equals(peekToken())) {
                     nextToken();
                     fieldType = parseDataType();
