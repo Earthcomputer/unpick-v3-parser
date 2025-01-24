@@ -351,7 +351,7 @@ public final class UnpickV3Reader implements AutoCloseable {
             nextToken(); // consume the operator
 
             int ourPrecedence = PRECEDENCES.get(operator);
-            while (!operatorStack.isEmpty() && ourPrecedence < PRECEDENCES.get(operatorStack.peek())) {
+            while (!operatorStack.isEmpty() && ourPrecedence <= PRECEDENCES.get(operatorStack.peek())) {
                 BinaryExpression.Operator op = operatorStack.pop();
                 Expression rhs = operandStack.pop();
                 Expression lhs = operandStack.pop();
