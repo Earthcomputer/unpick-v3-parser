@@ -134,6 +134,9 @@ public final class UnpickV3Reader implements AutoCloseable {
     }
 
     private GroupDefinition parseGroupDefinition(GroupScope scope, GroupType type) throws IOException {
+        int typeLine = lastTokenLine;
+        int typeColumn = lastTokenColumn;
+
         boolean strict = false;
         if ("strict".equals(peekToken())) {
             nextToken();
@@ -144,8 +147,14 @@ public final class UnpickV3Reader implements AutoCloseable {
         if (!isDataTypeValidInGroup(dataType)) {
             throw parseError("Data type not allowed in group: " + dataType);
         }
+        if (type == GroupType.FLAG && dataType != DataType.INT && dataType != DataType.LONG) {
+            throw parseError("Data type not allowed for flag constants");
+        }
 
         String name = peekTokenType() == TokenType.IDENTIFIER ? nextToken() : null;
+        if (name == null && type != GroupType.CONST) {
+            throw parseError("Non-const group type used for default group", typeLine, typeColumn);
+        }
 
         List<GroupConstant> constants = new ArrayList<>();
         GroupFormat format = null;
@@ -170,11 +179,23 @@ public final class UnpickV3Reader implements AutoCloseable {
                     if (!"format".equals(token)) {
                         throw expectedTokenError("constant", token);
                     }
+                    if (format != null) {
+                        throw parseError("Duplicate format declaration");
+                    }
                     expectToken("=");
                     format = parseGroupFormat();
                     break;
                 case OPERATOR: case INTEGER: case DOUBLE: case CHAR: case STRING:
-                    constants.add(parseGroupConstant(token));
+                    int constantLine = lastTokenLine;
+                    int constantColumn = lastTokenColumn;
+                    GroupConstant constant = parseGroupConstant(token);
+                    if (!isMatchingConstantType(dataType, constant.key)) {
+                        throw parseError("Constant type not valid for group data type", constantLine, constantColumn);
+                    }
+                    if (isDuplicateConstantKey(constants, constant)) {
+                        throw parseError("Duplicate constant key", constantLine, constantColumn);
+                    }
+                    constants.add(constant);
                     break;
                 default:
                     throw expectedTokenError("constant", token);
@@ -186,6 +207,51 @@ public final class UnpickV3Reader implements AutoCloseable {
 
     private static boolean isDataTypeValidInGroup(DataType type) {
         return type == DataType.INT || type == DataType.LONG || type == DataType.FLOAT || type == DataType.DOUBLE || type == DataType.STRING;
+    }
+
+    private static boolean isMatchingConstantType(DataType type, Literal.ConstantKey constantKey) {
+        if (constantKey instanceof Literal.Long) {
+            return type != DataType.STRING;
+        } else if (constantKey instanceof Literal.Double) {
+            return type == DataType.FLOAT || type == DataType.DOUBLE;
+        } else if (constantKey instanceof Literal.String) {
+            return type == DataType.STRING;
+        } else {
+            throw new AssertionError("Unknown group constant type: " + constantKey.getClass().getName());
+        }
+    }
+
+    private static boolean isDuplicateConstantKey(List<GroupConstant> constants, GroupConstant newConstant) {
+        if (newConstant.key instanceof Literal.Long) {
+            long newValue = ((Literal.Long) newConstant.key).value;
+            for (GroupConstant constant : constants) {
+                if (constant.key instanceof Literal.Long && ((Literal.Long) constant.key).value == newValue) {
+                    return true;
+                }
+                if (constant.key instanceof Literal.Double && ((Literal.Double) constant.key).value == newValue) {
+                    return true;
+                }
+            }
+        } else if (newConstant.key instanceof Literal.Double) {
+            double newValue = ((Literal.Double) newConstant.key).value;
+            for (GroupConstant constant : constants) {
+                if (constant.key instanceof Literal.Long && ((Literal.Long) constant.key).value == newValue) {
+                    return true;
+                }
+                if (constant.key instanceof Literal.Double && ((Literal.Double) constant.key).value == newValue) {
+                    return true;
+                }
+            }
+        } else if (newConstant.key instanceof Literal.String) {
+            String newValue = ((Literal.String) newConstant.key).value;
+            for (GroupConstant constant : constants) {
+                if (constant.key instanceof Literal.String && ((Literal.String) constant.key).value.equals(newValue)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private GroupFormat parseGroupFormat() throws IOException {
