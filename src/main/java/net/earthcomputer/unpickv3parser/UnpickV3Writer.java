@@ -214,17 +214,49 @@ public final class UnpickV3Writer extends UnpickV3Visitor {
                     result.append("\\\\");
                     break;
                 default:
-                    if (c < ' ') {
-                        result.append("\\u").append(String.format("%04x", (int) c));
-                    } else if (c == quoteChar) {
+                    if (c == quoteChar) {
                         result.append("\\").append(c);
-                    } else {
+                    } else if (isPrintable(c)) {
                         result.append(c);
+                    } else if (c <= 255) {
+                        result.append('\\').append(Integer.toOctalString(c));
+                    } else {
+                        result.append("\\u").append(String.format("%04x", (int) c));
                     }
             }
         }
 
         return result.append(quoteChar).toString();
+    }
+
+    private static boolean isPrintable(char ch) {
+        switch (Character.getType(ch)) {
+            case Character.UPPERCASE_LETTER:
+            case Character.LOWERCASE_LETTER:
+            case Character.TITLECASE_LETTER:
+            case Character.MODIFIER_LETTER:
+            case Character.OTHER_LETTER:
+            case Character.NON_SPACING_MARK:
+            case Character.ENCLOSING_MARK:
+            case Character.COMBINING_SPACING_MARK:
+            case Character.DECIMAL_DIGIT_NUMBER:
+            case Character.LETTER_NUMBER:
+            case Character.OTHER_NUMBER:
+            case Character.SPACE_SEPARATOR:
+            case Character.DASH_PUNCTUATION:
+            case Character.START_PUNCTUATION:
+            case Character.END_PUNCTUATION:
+            case Character.CONNECTOR_PUNCTUATION:
+            case Character.OTHER_PUNCTUATION:
+            case Character.MATH_SYMBOL:
+            case Character.CURRENCY_SYMBOL:
+            case Character.MODIFIER_SYMBOL:
+            case Character.OTHER_SYMBOL:
+            case Character.INITIAL_QUOTE_PUNCTUATION:
+            case Character.FINAL_QUOTE_PUNCTUATION:
+                return true;
+        }
+        return false;
     }
 
     public String getOutput() {
