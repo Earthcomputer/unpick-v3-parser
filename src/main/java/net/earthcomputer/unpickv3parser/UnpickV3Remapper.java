@@ -14,6 +14,7 @@ import net.earthcomputer.unpickv3parser.tree.expr.FieldExpression;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class UnpickV3Remapper extends UnpickV3Visitor {
@@ -133,6 +134,25 @@ public class UnpickV3Remapper extends UnpickV3Visitor {
             this.fieldName = fieldName;
             this.fieldDesc = fieldDesc;
         }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(className, fieldName, fieldDesc);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof FieldKey)) {
+                return false;
+            }
+            FieldKey other = (FieldKey) o;
+            return className.equals(other.className) && fieldName.equals(other.fieldName) && fieldDesc.equals(other.fieldDesc);
+        }
+
+        @Override
+        public String toString() {
+            return className + "." + fieldName + ":" + fieldDesc;
+        }
     }
 
     public static final class MethodKey {
@@ -147,6 +167,25 @@ public class UnpickV3Remapper extends UnpickV3Visitor {
             this.className = className;
             this.methodName = methodName;
             this.methodDesc = methodDesc;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(className, methodName, methodDesc);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof MethodKey)) {
+                return false;
+            }
+            MethodKey other = (MethodKey) o;
+            return className.equals(other.className) && methodName.equals(other.methodName) && methodDesc.equals(other.methodDesc);
+        }
+
+        @Override
+        public String toString() {
+            return className + "." + methodName + methodDesc;
         }
     }
 
