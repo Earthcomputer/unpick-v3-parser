@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class UnpickV3Remapper extends UnpickV3Visitor {
-    private final UnpickV3Remapper downstream;
+    private final UnpickV3Visitor downstream;
     private final Map<String, List<String>> classesInPackage;
     private final Map<String, String> classMappings;
     private final Map<FieldKey, String> fieldMappings;
@@ -29,7 +29,7 @@ public class UnpickV3Remapper extends UnpickV3Visitor {
      * package name is already in the key of the map entry).
      */
     public UnpickV3Remapper(
-        UnpickV3Remapper downstream,
+        UnpickV3Visitor downstream,
         Map<String, List<String>> classesInPackage,
         Map<String, String> classMappings,
         Map<FieldKey, String> fieldMappings,
