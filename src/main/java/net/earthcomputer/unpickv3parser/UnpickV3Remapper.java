@@ -55,7 +55,7 @@ public class UnpickV3Remapper extends UnpickV3Visitor {
                 .map(cls -> new GroupScope.Class(mapClassName(pkg + "." + cls)))
                 .collect(Collectors.toList());
         } else if (oldScope instanceof GroupScope.Class) {
-            scopes = Collections.singletonList(new GroupScope.Class(mapClassName(groupDefinition.name)));
+            scopes = Collections.singletonList(new GroupScope.Class(mapClassName(((GroupScope.Class) oldScope).className)));
         } else if (oldScope instanceof GroupScope.Method) {
             GroupScope.Method methodScope = (GroupScope.Method) oldScope;
             String className = mapClassName(methodScope.className);
