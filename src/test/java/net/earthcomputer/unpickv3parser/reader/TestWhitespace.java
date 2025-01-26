@@ -25,6 +25,11 @@ public final class TestWhitespace {
     }
 
     @Test
+    public void testMinimalSpaces() throws IOException {
+        TestReader.test("whitespace/minimal_spaces");
+    }
+
+    @Test
     public void testCommentOnFirstLine() throws IOException {
         TestReader.assertThrowsParseError("whitespace/invalid/comment_on_first_line", 1, 1);
     }
