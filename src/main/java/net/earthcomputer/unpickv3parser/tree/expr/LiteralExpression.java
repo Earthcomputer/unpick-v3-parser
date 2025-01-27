@@ -18,7 +18,7 @@ public final class LiteralExpression extends Expression {
     }
 
     @Override
-    public Expression remap(ExpressionRemapper remapper) {
-        return remapper.remapLiteralExpression(this);
+    public Expression transform(ExpressionTransformer transformer) {
+        return transformer.transformLiteralExpression(this);
     }
 }

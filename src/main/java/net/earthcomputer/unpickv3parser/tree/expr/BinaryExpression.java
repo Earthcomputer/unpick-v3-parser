@@ -17,8 +17,8 @@ public final class BinaryExpression extends Expression {
     }
 
     @Override
-    public Expression remap(ExpressionRemapper remapper) {
-        return remapper.remapBinaryExpression(this);
+    public Expression transform(ExpressionTransformer transformer) {
+        return transformer.transformBinaryExpression(this);
     }
 
     public enum Operator {

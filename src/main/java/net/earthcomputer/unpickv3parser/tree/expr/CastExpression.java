@@ -17,7 +17,7 @@ public final class CastExpression extends Expression {
     }
 
     @Override
-    public Expression remap(ExpressionRemapper remapper) {
-        return remapper.remapCastExpression(this);
+    public Expression transform(ExpressionTransformer transformer) {
+        return transformer.transformCastExpression(this);
     }
 }

@@ -23,7 +23,7 @@ public final class FieldExpression extends Expression {
     }
 
     @Override
-    public Expression remap(ExpressionRemapper remapper) {
-        return remapper.remapFieldExpression(this);
+    public Expression transform(ExpressionTransformer transformer) {
+        return transformer.transformFieldExpression(this);
     }
 }

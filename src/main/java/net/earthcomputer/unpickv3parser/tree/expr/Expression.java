@@ -6,5 +6,5 @@ public abstract class Expression {
 
     public abstract void accept(ExpressionVisitor visitor);
 
-    public abstract Expression remap(ExpressionRemapper remapper);
+    public abstract Expression transform(ExpressionTransformer transformer);
 }

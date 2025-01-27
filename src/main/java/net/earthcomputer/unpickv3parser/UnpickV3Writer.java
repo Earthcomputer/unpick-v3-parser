@@ -21,6 +21,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+/**
+ * A visitor that generates .unpick v3 format text. Useful for programmatically writing .unpick v3 format files;
+ * or remapping them, when used as the delegate for an instance of {@link UnpickV3Remapper}.
+ */
 public final class UnpickV3Writer extends UnpickV3Visitor {
     private static final String LINE_SEPARATOR = System.lineSeparator();
     private final String indent;

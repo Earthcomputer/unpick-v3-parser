@@ -13,7 +13,7 @@ public final class ParenExpression extends Expression {
     }
 
     @Override
-    public Expression remap(ExpressionRemapper remapper) {
-        return remapper.remapParenExpression(this);
+    public Expression transform(ExpressionTransformer transformer) {
+        return transformer.transformParenExpression(this);
     }
 }

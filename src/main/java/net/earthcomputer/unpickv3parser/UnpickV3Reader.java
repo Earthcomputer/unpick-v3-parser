@@ -29,6 +29,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
+/**
+ * Performs syntax checking and basic semantic checking on .unpick v3 format text, and allows its structure to be
+ * visited by instances of {@link UnpickV3Visitor}.
+ */
 public final class UnpickV3Reader implements AutoCloseable {
     private static final int MAX_PARSE_DEPTH = 64;
     private static final EnumMap<BinaryExpression.Operator, Integer> PRECEDENCES = new EnumMap<>(BinaryExpression.Operator.class);

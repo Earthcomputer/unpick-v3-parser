@@ -15,8 +15,8 @@ public final class UnaryExpression extends Expression {
     }
 
     @Override
-    public Expression remap(ExpressionRemapper remapper) {
-        return remapper.remapUnaryExpression(this);
+    public Expression transform(ExpressionTransformer transformer) {
+        return transformer.transformUnaryExpression(this);
     }
 
     public enum Operator {

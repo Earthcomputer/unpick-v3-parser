@@ -1,5 +1,8 @@
 package net.earthcomputer.unpickv3parser.tree.expr;
 
+/**
+ * Visitor for an {@link Expression}. By default, recursively visits sub-expressions.
+ */
 public abstract class ExpressionVisitor {
     public void visitBinaryExpression(BinaryExpression binaryExpression) {
         binaryExpression.lhs.accept(this);
