@@ -131,14 +131,22 @@ public final class TestSyntax {
                         return ((Literal.Long) constant.key).value;
                     } else if (constant.key instanceof Literal.Double) {
                         return ((Literal.Double) constant.key).value;
-                    } else {
+                    } else if (constant.key instanceof Literal.String) {
                         return ((Literal.String) constant.key).value;
+                    } else if (constant.key instanceof Literal.Class) {
+                        return ((Literal.Class) constant.key).descriptor;
+                    } else if (constant.key instanceof Literal.Null) {
+                        return null;
+                    } else {
+                        throw new AssertionError("Unexpected constant key type: " + constant.key.getClass().getName());
                     }
                 }).collect(Collectors.toList()));
             }
         });
         assertEquals(Arrays.asList(
             null,
+            null,
+            "g",
             null,
             "g",
             null,
@@ -162,6 +170,8 @@ public final class TestSyntax {
             null
         ), groupNames);
         assertEquals(Arrays.asList(
+            GroupType.CONST,
+            GroupType.CONST,
             GroupType.CONST,
             GroupType.CONST,
             GroupType.CONST,
@@ -197,6 +207,8 @@ public final class TestSyntax {
             DataType.DOUBLE,
             DataType.STRING,
             DataType.STRING,
+            DataType.CLASS,
+            DataType.CLASS,
             DataType.INT,
             DataType.LONG,
             DataType.INT,
@@ -215,12 +227,14 @@ public final class TestSyntax {
             Collections.singletonList(0L),
             Collections.singletonList(0L),
             Collections.singletonList(0L),
+            Arrays.asList(0L, 1.0, Double.NaN, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY),
             Arrays.asList(0L, 1.0),
+            Arrays.asList(0L, 1.0, Double.NaN, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY),
             Arrays.asList(0L, 1.0),
-            Arrays.asList(0L, 1.0),
-            Arrays.asList(0L, 1.0),
+            Arrays.asList("", null),
             Collections.singletonList(""),
-            Collections.singletonList(""),
+            Arrays.asList("[I", null),
+            Collections.singletonList("[I"),
             Collections.singletonList(0L),
             Collections.singletonList(0L),
             Collections.emptyList(),
@@ -247,6 +261,8 @@ public final class TestSyntax {
             null,
             null,
             null,
+            null,
+            null,
             GroupFormat.DECIMAL,
             GroupFormat.HEX,
             GroupFormat.BINARY,
@@ -258,21 +274,21 @@ public final class TestSyntax {
             null
         ), groupFormats);
         for (int i = 0; i < groupPackageScopes.size(); i++) {
-            if (i == 19) {
+            if (i == 21) {
                 assertEquals("foo.bar", groupPackageScopes.get(i));
             } else {
                 assertNull(groupPackageScopes.get(i));
             }
         }
         for (int i = 0; i < groupClassScopes.size(); i++) {
-            if (i == 20) {
+            if (i == 22) {
                 assertEquals("foo.Bar", groupClassScopes.get(i));
             } else {
                 assertNull(groupClassScopes.get(i));
             }
         }
         for (int i = 0; i < groupMethodScopes.size(); i++) {
-            if (i == 21) {
+            if (i == 23) {
                 assertEquals("foo.Bar.baz()V", groupMethodScopes.get(i));
             } else {
                 assertNull(groupMethodScopes.get(i));
@@ -341,6 +357,36 @@ public final class TestSyntax {
     @Test
     public void testGroupDefinitionStringConstantForFloat() throws IOException {
         TestReader.assertThrowsParseError("syntax/invalid/group_definition_string_constant_for_float", 3, 5);
+    }
+
+    @Test
+    public void testGroupDefinitionIntConstantForClass() throws IOException {
+        TestReader.assertThrowsParseError("syntax/invalid/group_definition_int_constant_for_class", 3, 5);
+    }
+
+    @Test
+    public void testGroupDefinitionClassConstantForInt() throws IOException {
+        TestReader.assertThrowsParseError("syntax/invalid/group_definition_class_constant_for_int", 3, 12);
+    }
+
+    @Test
+    public void testGroupDefinitionClassConstantForString() throws IOException {
+        TestReader.assertThrowsParseError("syntax/invalid/group_definition_class_constant_for_string", 3, 12);
+    }
+
+    @Test
+    public void testGroupDefinitionStringConstantForClass() throws IOException {
+        TestReader.assertThrowsParseError("syntax/invalid/group_definition_string_constant_for_class", 3, 5);
+    }
+
+    @Test
+    public void testGroupDefinitionNullConstantForInt() throws IOException {
+        TestReader.assertThrowsParseError("syntax/invalid/group_definition_null_constant_for_int", 3, 5);
+    }
+
+    @Test
+    public void testGroupDefinitionNullConstantForFloat() throws IOException {
+        TestReader.assertThrowsParseError("syntax/invalid/group_definition_null_constant_for_float", 3, 5);
     }
 
     @Test

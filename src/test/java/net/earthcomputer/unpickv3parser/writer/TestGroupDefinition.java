@@ -230,4 +230,49 @@ public final class TestGroupDefinition {
             new GroupDefinition(GroupScope.Global.INSTANCE, GroupType.CONST, false, DataType.STRING, null, Collections.singletonList(constant), null)
         );
     }
+
+    @Test
+    public void testClassConstant() {
+        GroupConstant constant = new GroupConstant(new Literal.Class("LFoo;"), new LiteralExpression(new Literal.Integer(0)));
+        TestWriter.testGroupDefinition(
+            "const Class\n\tclass LFoo; = 0",
+            new GroupDefinition(GroupScope.Global.INSTANCE, GroupType.CONST, false, DataType.CLASS, null, Collections.singletonList(constant), null)
+        );
+    }
+
+    @Test
+    public void testNaNConstant() {
+        GroupConstant constant = new GroupConstant(new Literal.Double(Double.NaN), new LiteralExpression(new Literal.Double(0.0)));
+        TestWriter.testGroupDefinition(
+            "const double\n\tNaN = 0.0",
+            new GroupDefinition(GroupScope.Global.INSTANCE, GroupType.CONST, false, DataType.DOUBLE, null, Collections.singletonList(constant), null)
+        );
+    }
+
+    @Test
+    public void testInfinityConstant() {
+        GroupConstant constant = new GroupConstant(new Literal.Double(Double.POSITIVE_INFINITY), new LiteralExpression(new Literal.Double(0.0)));
+        TestWriter.testGroupDefinition(
+            "const double\n\tInfinity = 0.0",
+            new GroupDefinition(GroupScope.Global.INSTANCE, GroupType.CONST, false, DataType.DOUBLE, null, Collections.singletonList(constant), null)
+        );
+    }
+
+    @Test
+    public void testNegativeInfinityConstant() {
+        GroupConstant constant = new GroupConstant(new Literal.Double(Double.NEGATIVE_INFINITY), new LiteralExpression(new Literal.Double(0.0)));
+        TestWriter.testGroupDefinition(
+            "const double\n\t-Infinity = 0.0",
+            new GroupDefinition(GroupScope.Global.INSTANCE, GroupType.CONST, false, DataType.DOUBLE, null, Collections.singletonList(constant), null)
+        );
+    }
+
+    @Test
+    public void testNullConstant() {
+        GroupConstant constant = new GroupConstant(Literal.Null.INSTANCE, new LiteralExpression(new Literal.String("")));
+        TestWriter.testGroupDefinition(
+            "const String\n\tnull = \"\"",
+            new GroupDefinition(GroupScope.Global.INSTANCE, GroupType.CONST, false, DataType.STRING, null, Collections.singletonList(constant), null)
+        );
+    }
 }

@@ -79,6 +79,11 @@ public final class TestRemapper {
         test("scoped method mapped.bar.Y bar2 (Lmapped/foo/X;)V const int", "scoped method unmapped.foo.B foo2 (Lunmapped/foo/A;)V const int");
     }
 
+    @Test
+    public void testClassKey() throws IOException {
+        test("const Class\n\tclass Lmapped/foo/X; = Foo.bar", "const Class\n\tclass Lunmapped/foo/A; = Foo.bar");
+    }
+
     private static void test(String expectedRemapped, String original) throws IOException {
         expectedRemapped = "unpick v3\n\n" + expectedRemapped + "\n";
         original = "unpick v3\n\n" + original + "\n";

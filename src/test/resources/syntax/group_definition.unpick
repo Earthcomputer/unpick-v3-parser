@@ -11,19 +11,31 @@ const long g
 const float
     0 = 0
     1.0 = 1.0
+    NaN = 0.0 / 0
+    Infinity = 1.0 / 0
+    -Infinity = -1.0 / 0
 const float g
     '\0' = 0
     1.0 = 1.0
 const double
     0 = 0
     1.0 = 1.0
+    NaN = 0.0 / 0
+    Infinity = 1.0 / 0
+    -Infinity = -1.0 / 0
 const double g
     0 = 0
     1.0 = 1.0
 const String
     "" = ""
+    null = Foo.bar
 const String g
     "" = ""
+const Class
+    class [I = Foo.bar
+    null = Foo.bar
+const Class g
+    class [I = Foo.bar
 flag int g
     0 = 0
 flag long g

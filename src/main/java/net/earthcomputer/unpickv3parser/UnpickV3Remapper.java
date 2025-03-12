@@ -4,6 +4,7 @@ import net.earthcomputer.unpickv3parser.tree.DataType;
 import net.earthcomputer.unpickv3parser.tree.GroupConstant;
 import net.earthcomputer.unpickv3parser.tree.GroupDefinition;
 import net.earthcomputer.unpickv3parser.tree.GroupScope;
+import net.earthcomputer.unpickv3parser.tree.Literal;
 import net.earthcomputer.unpickv3parser.tree.TargetField;
 import net.earthcomputer.unpickv3parser.tree.TargetMethod;
 import net.earthcomputer.unpickv3parser.tree.UnpickV3Visitor;
@@ -71,7 +72,7 @@ public class UnpickV3Remapper extends UnpickV3Visitor {
         }
 
         List<GroupConstant> constants = groupDefinition.constants.stream()
-            .map(constant -> new GroupConstant(constant.key, constant.value.transform(new ExpressionRemapper(groupDefinition.dataType))))
+            .map(constant -> new GroupConstant(mapConstantKey(constant.key), constant.value.transform(new ExpressionRemapper(groupDefinition.dataType))))
             .collect(Collectors.toList());
 
         for (GroupScope scope : scopes) {
@@ -105,6 +106,14 @@ public class UnpickV3Remapper extends UnpickV3Visitor {
 
     private String mapMethodName(String className, String methodName, String methodDesc) {
         return methodMappings.getOrDefault(new MethodKey(className, methodName, methodDesc), methodName);
+    }
+
+    private Literal.ConstantKey mapConstantKey(Literal.ConstantKey constantKey) {
+        if (constantKey instanceof Literal.Class) {
+            return new Literal.Class(mapDescriptor(((Literal.Class) constantKey).descriptor));
+        } else {
+            return constantKey;
+        }
     }
 
     private String mapDescriptor(String descriptor) {
@@ -227,6 +236,9 @@ public class UnpickV3Remapper extends UnpickV3Visitor {
                     break;
                 case STRING:
                     fieldDesc = "Ljava/lang/String;";
+                    break;
+                case CLASS:
+                    fieldDesc = "Ljava/lang/Class;";
                     break;
                 default:
                     throw new AssertionError("Unknown data type: " + fieldExpression.fieldType);
