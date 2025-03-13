@@ -51,8 +51,8 @@ public final class TestTokens {
                 }
             }
         });
-        assertEquals(Arrays.asList(0.0, -2.0, 4.5, 1.0e5, 1.0e5), constantKeys);
-        assertEquals(Arrays.asList(1.0, 3.0, 1.0e5, 1.0e-5, 1.0e10), exprDoubles);
+        assertEquals(Arrays.asList(0.0, -2.0, 4.5, 1.0e5, Double.MAX_VALUE, 1.0e5), constantKeys);
+        assertEquals(Arrays.asList(1.0, 3.0, 1.0e5, 1.0e-5, Double.MAX_VALUE, 1.0e10), exprDoubles);
     }
 
     @Test
@@ -71,7 +71,7 @@ public final class TestTokens {
                 }
             }
         });
-        assertEquals(Arrays.asList(1.0f, 3.0f, 1.0e5f, 1.0e-5f, 1.0e10f), exprFloats);
+        assertEquals(Arrays.asList(1.0f, 3.0f, 1.0e5f, 1.0e-5f, 1.0e10f, Float.MAX_VALUE), exprFloats);
     }
 
     @Test
@@ -203,6 +203,11 @@ public final class TestTokens {
     }
 
     @Test
+    public void testFloatOutOfBounds() throws IOException {
+        TestReader.assertThrowsParseError("tokens/invalid/float_out_of_bounds", 3, 9);
+    }
+
+    @Test
     public void testDoubleMissingWholePart() throws IOException {
         TestReader.assertThrowsParseError("tokens/invalid/double_missing_whole_part", 3, 5);
     }
@@ -220,6 +225,11 @@ public final class TestTokens {
     @Test
     public void testDoubleMissingExpValueAfterSign() throws IOException {
         TestReader.assertThrowsParseError("tokens/invalid/double_missing_exp_value_after_sign", 3, 10);
+    }
+
+    @Test
+    public void testDoubleOutOfBounds() throws IOException {
+        TestReader.assertThrowsParseError("tokens/invalid/double_out_of_bounds", 3, 9);
     }
 
     @Test
