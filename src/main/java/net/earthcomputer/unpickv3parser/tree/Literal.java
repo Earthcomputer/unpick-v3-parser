@@ -4,11 +4,6 @@ public abstract class Literal {
     private Literal() {
     }
 
-    public static abstract class ConstantKey extends Literal {
-        private ConstantKey() {
-        }
-    }
-
     public static final class Integer extends Literal {
         public final int value;
         public final int radix;
@@ -23,7 +18,7 @@ public abstract class Literal {
         }
     }
 
-    public static final class Long extends ConstantKey {
+    public static final class Long extends Literal {
         public final long value;
         public final int radix;
 
@@ -45,7 +40,7 @@ public abstract class Literal {
         }
     }
 
-    public static final class Double extends ConstantKey {
+    public static final class Double extends Literal {
         public final double value;
 
         public Double(double value) {
@@ -61,26 +56,11 @@ public abstract class Literal {
         }
     }
 
-    public static final class String extends ConstantKey {
+    public static final class String extends Literal {
         public final java.lang.String value;
 
         public String(java.lang.String value) {
             this.value = value;
-        }
-    }
-
-    public static final class Class extends ConstantKey {
-        public final java.lang.String descriptor;
-
-        public Class(java.lang.String descriptor) {
-            this.descriptor = descriptor;
-        }
-    }
-
-    public static final class Null extends ConstantKey {
-        public static final Null INSTANCE = new Null();
-
-        private Null() {
         }
     }
 }

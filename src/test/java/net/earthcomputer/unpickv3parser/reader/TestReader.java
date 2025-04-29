@@ -16,11 +16,12 @@ public final class TestReader {
     private TestReader() {
     }
 
-    public static void assertThrowsParseError(String file, int line, int column) throws IOException {
+    public static void assertThrowsParseError(String file, int line, int column, String message) throws IOException {
         try {
             test(file);
             throw new AssertionFailedError("Did not throw parse error");
         } catch (UnpickParseException e) {
+            assertEquals(line + ":" + column + ": " + message, e.getMessage());
             assertEquals(line, e.line, "Mismatching line");
             assertEquals(column, e.column, "Mismatching column");
         }

@@ -12,23 +12,24 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public final class TestRemapper {
     private static final Map<String, List<String>> PACKAGES = new HashMap<>();
     private static final Map<String, String> CLASSES = new HashMap<>();
-    private static final Map<UnpickV3Remapper.FieldKey, String> FIELDS = new HashMap<>();
-    private static final Map<UnpickV3Remapper.MethodKey, String> METHODS = new HashMap<>();
+    private static final Map<MemberKey, String> FIELDS = new HashMap<>();
+    private static final Map<MemberKey, String> METHODS = new HashMap<>();
 
     static {
-        PACKAGES.put("unmapped.foo", Arrays.asList("A", "B"));
-        PACKAGES.put("unmapped.bar", Collections.singletonList("C"));
+        PACKAGES.put("unmapped.foo", Arrays.asList("unmapped.foo.A", "unmapped.foo.B"));
+        PACKAGES.put("unmapped.bar", Collections.singletonList("unmapped.bar.C"));
         CLASSES.put("unmapped.foo.A", "mapped.foo.X");
         CLASSES.put("unmapped.foo.B", "mapped.bar.Y");
         CLASSES.put("unmapped.bar.C", "mapped.bar.Z");
-        FIELDS.put(new UnpickV3Remapper.FieldKey("unmapped.foo.B", "baz", "I"), "quux");
-        METHODS.put(new UnpickV3Remapper.MethodKey("unmapped.foo.B", "foo2", "(Lunmapped/foo/A;)V"), "bar2");
+        FIELDS.put(new MemberKey("unmapped.foo.B", "baz", "I"), "quux");
+        METHODS.put(new MemberKey("unmapped.foo.B", "foo2", "(Lunmapped/foo/A;)V"), "bar2");
     }
 
     @Test
@@ -48,40 +49,35 @@ public final class TestRemapper {
 
     @Test
     public void testFieldExpression() throws IOException {
-        test("const int\n\t0 = mapped.bar.Y.quux", "const int\n\t0 = unmapped.foo.B.baz");
+        test("group int\n\tmapped.bar.Y.quux", "group int\n\tunmapped.foo.B.baz");
     }
 
     @Test
     public void testTypedFieldExpression() throws IOException {
-        test("const float\n\t0 = mapped.bar.Y.quux:int", "const float\n\t0 = unmapped.foo.B.baz:int");
+        test("group float\n\tmapped.bar.Y.quux:int", "group float\n\tunmapped.foo.B.baz:int");
     }
 
     @Test
     public void testFieldExpressionWrongType() throws IOException {
-        test("const float\n\t0 = mapped.bar.Y.baz", "const float\n\t0 = unmapped.foo.B.baz");
+        test("group float\n\tmapped.bar.Y.baz:float", "group float\n\tunmapped.foo.B.baz:float");
     }
 
     @Test
     public void testPackageScope() throws IOException {
         test(
-            "scoped class mapped.foo.X const int\n\t0 = 0\n\t1 = 1\n\nscoped class mapped.bar.Y const int\n\t0 = 0\n\t1 = 1",
-            "scoped package unmapped.foo const int\n\t0 = 0\n\t1 = 1"
+            "group int\n\t@scope class mapped.foo.X\n\t@scope class mapped.bar.Y\n\t0\n\t1",
+            "group int\n\t@scope package unmapped.foo\n\t0\n\t1"
         );
     }
 
     @Test
     public void testClassScope() throws IOException {
-        test("scoped class mapped.foo.X const int", "scoped class unmapped.foo.A const int");
+        test("group int\n\t@scope class mapped.foo.X", "group int\n\t@scope class unmapped.foo.A");
     }
 
     @Test
     public void testMethodScope() throws IOException {
-        test("scoped method mapped.bar.Y bar2 (Lmapped/foo/X;)V const int", "scoped method unmapped.foo.B foo2 (Lunmapped/foo/A;)V const int");
-    }
-
-    @Test
-    public void testClassKey() throws IOException {
-        test("const Class\n\tclass Lmapped/foo/X; = Foo.bar", "const Class\n\tclass Lunmapped/foo/A; = Foo.bar");
+        test("group int\n\t@scope method mapped.bar.Y bar2 (Lmapped/foo/X;)V", "group int\n\t@scope method unmapped.foo.B foo2 (Lunmapped/foo/A;)V");
     }
 
     private static void test(String expectedRemapped, String original) throws IOException {
@@ -91,10 +87,62 @@ public final class TestRemapper {
         String remapped;
         try (UnpickV3Reader reader = new UnpickV3Reader(new StringReader(original))) {
             UnpickV3Writer writer = new UnpickV3Writer();
-            UnpickV3Remapper remapper = new UnpickV3Remapper(writer, PACKAGES, CLASSES, FIELDS, METHODS);
+            UnpickV3Remapper remapper = new UnpickV3Remapper(writer) {
+                @Override
+                protected String mapClassName(String className) {
+                    return CLASSES.getOrDefault(className, className);
+                }
+
+                @Override
+                protected String mapFieldName(String className, String fieldName, String fieldDesc) {
+                    return FIELDS.getOrDefault(new MemberKey(className, fieldName, fieldDesc), fieldName);
+                }
+
+                @Override
+                protected String mapMethodName(String className, String methodName, String methodDesc) {
+                    return METHODS.getOrDefault(new MemberKey(className, methodName, methodDesc), methodName);
+                }
+
+                @Override
+                protected List<String> getClassesInPackage(String pkg) {
+                    return PACKAGES.getOrDefault(pkg, Collections.emptyList());
+                }
+
+                @Override
+                protected String getFieldDesc(String className, String fieldName) {
+                    return "I";
+                }
+            };
             reader.accept(remapper);
             remapped = writer.getOutput().replace(System.lineSeparator(), "\n");
         }
         assertEquals(expectedRemapped, remapped);
+    }
+    
+    private static final class MemberKey {
+        private final String owner;
+        private final String name;
+        private final String descriptor;
+
+        private MemberKey(String owner, String name, String descriptor) {
+            this.owner = owner;
+            this.name = name;
+            this.descriptor = descriptor;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(owner, name, descriptor);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            MemberKey memberKey = (MemberKey) o;
+            return Objects.equals(owner, memberKey.owner)
+                && Objects.equals(name, memberKey.name)
+                && Objects.equals(descriptor, memberKey.descriptor);
+        }
     }
 }

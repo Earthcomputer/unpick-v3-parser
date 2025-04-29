@@ -1,12 +1,11 @@
 package net.earthcomputer.unpickv3parser.writer;
 
 import net.earthcomputer.unpickv3parser.tree.DataType;
-import net.earthcomputer.unpickv3parser.tree.GroupConstant;
 import net.earthcomputer.unpickv3parser.tree.GroupDefinition;
 import net.earthcomputer.unpickv3parser.tree.GroupFormat;
 import net.earthcomputer.unpickv3parser.tree.GroupScope;
-import net.earthcomputer.unpickv3parser.tree.GroupType;
 import net.earthcomputer.unpickv3parser.tree.Literal;
+import net.earthcomputer.unpickv3parser.tree.expr.Expression;
 import net.earthcomputer.unpickv3parser.tree.expr.LiteralExpression;
 import net.earthcomputer.unpickv3parser.tree.expr.UnaryExpression;
 import org.junit.jupiter.api.Test;
@@ -17,262 +16,217 @@ public final class TestGroupDefinition {
     @Test
     public void testSimpleGroupDefinition() {
         TestWriter.testGroupDefinition(
-            "const int",
-            new GroupDefinition(GroupScope.Global.INSTANCE, GroupType.CONST, false, DataType.INT, null, Collections.emptyList(), null)
+            "group int",
+            new GroupDefinition(Collections.emptyList(), false, false, DataType.INT, null, Collections.emptyList(), null)
         );
     }
 
     @Test
     public void testPackageScope() {
         TestWriter.testGroupDefinition(
-            "scoped package foo.bar const int",
-            new GroupDefinition(new GroupScope.Package("foo.bar"), GroupType.CONST, false, DataType.INT, null, Collections.emptyList(), null)
+            "group int\n\t@scope package foo.bar",
+            new GroupDefinition(Collections.singletonList(new GroupScope.Package("foo.bar")), false, false, DataType.INT, null, Collections.emptyList(), null)
         );
     }
 
     @Test
     public void testClassScope() {
         TestWriter.testGroupDefinition(
-            "scoped class foo.Bar const int",
-            new GroupDefinition(new GroupScope.Class("foo.Bar"), GroupType.CONST, false, DataType.INT, null, Collections.emptyList(), null)
+            "group int\n\t@scope class foo.Bar",
+            new GroupDefinition(Collections.singletonList(new GroupScope.Class("foo.Bar")), false, false, DataType.INT, null, Collections.emptyList(), null)
         );
     }
 
     @Test
     public void testMethodScope() {
         TestWriter.testGroupDefinition(
-            "scoped method foo.Bar baz ()V const int",
-            new GroupDefinition(new GroupScope.Method("foo.Bar", "baz", "()V"), GroupType.CONST, false, DataType.INT, null, Collections.emptyList(), null)
+            "group int\n\t@scope method foo.Bar baz ()V",
+            new GroupDefinition(Collections.singletonList(new GroupScope.Method("foo.Bar", "baz", "()V")), false, false, DataType.INT, null, Collections.emptyList(), null)
         );
     }
 
     @Test
     public void testStrict() {
         TestWriter.testGroupDefinition(
-            "const strict int",
-            new GroupDefinition(GroupScope.Global.INSTANCE, GroupType.CONST, true, DataType.INT, null, Collections.emptyList(), null)
+            "group int\n\t@strict",
+            new GroupDefinition(Collections.emptyList(), false, true, DataType.INT, null, Collections.emptyList(), null)
         );
     }
 
     @Test
     public void testStrictWithScope() {
         TestWriter.testGroupDefinition(
-            "scoped package foo.bar const strict int",
-            new GroupDefinition(new GroupScope.Package("foo.bar"), GroupType.CONST, true, DataType.INT, null, Collections.emptyList(), null)
+            "group int\n\t@scope package foo.bar\n\t@strict",
+            new GroupDefinition(Collections.singletonList(new GroupScope.Package("foo.bar")), false, true, DataType.INT, null, Collections.emptyList(), null)
         );
     }
 
     @Test
     public void testFlag() {
         TestWriter.testGroupDefinition(
-            "flag int",
-            new GroupDefinition(GroupScope.Global.INSTANCE, GroupType.FLAG, false, DataType.INT, null, Collections.emptyList(), null)
+            "group int\n\t@flags",
+            new GroupDefinition(Collections.emptyList(), true, false, DataType.INT, null, Collections.emptyList(), null)
         );
     }
 
     @Test
     public void testLong() {
         TestWriter.testGroupDefinition(
-            "const long",
-            new GroupDefinition(GroupScope.Global.INSTANCE, GroupType.CONST, false, DataType.LONG, null, Collections.emptyList(), null)
+            "group long",
+            new GroupDefinition(Collections.emptyList(), false, false, DataType.LONG, null, Collections.emptyList(), null)
         );
     }
 
     @Test
     public void testFloat() {
         TestWriter.testGroupDefinition(
-            "const float",
-            new GroupDefinition(GroupScope.Global.INSTANCE, GroupType.CONST, false, DataType.FLOAT, null, Collections.emptyList(), null)
+            "group float",
+            new GroupDefinition(Collections.emptyList(), false, false, DataType.FLOAT, null, Collections.emptyList(), null)
         );
     }
 
     @Test
     public void testDouble() {
         TestWriter.testGroupDefinition(
-            "const double",
-            new GroupDefinition(GroupScope.Global.INSTANCE, GroupType.CONST, false, DataType.DOUBLE, null, Collections.emptyList(), null)
+            "group double",
+            new GroupDefinition(Collections.emptyList(), false, false, DataType.DOUBLE, null, Collections.emptyList(), null)
         );
     }
 
     @Test
     public void testString() {
         TestWriter.testGroupDefinition(
-            "const String",
-            new GroupDefinition(GroupScope.Global.INSTANCE, GroupType.CONST, false, DataType.STRING, null, Collections.emptyList(), null)
+            "group String",
+            new GroupDefinition(Collections.emptyList(), false, false, DataType.STRING, null, Collections.emptyList(), null)
         );
     }
 
     @Test
     public void testNamed() {
         TestWriter.testGroupDefinition(
-            "const int g",
-            new GroupDefinition(GroupScope.Global.INSTANCE, GroupType.CONST, false, DataType.INT, "g", Collections.emptyList(), null)
+            "group int g",
+            new GroupDefinition(Collections.emptyList(), false, false, DataType.INT, "g", Collections.emptyList(), null)
         );
     }
 
     @Test
     public void testFormatDecimal() {
         TestWriter.testGroupDefinition(
-            "const int\n\tformat = decimal",
-            new GroupDefinition(GroupScope.Global.INSTANCE, GroupType.CONST, false, DataType.INT, null, Collections.emptyList(), GroupFormat.DECIMAL)
+            "group int\n\t@format decimal",
+            new GroupDefinition(Collections.emptyList(), false, false, DataType.INT, null, Collections.emptyList(), GroupFormat.DECIMAL)
         );
     }
 
     @Test
     public void testFormatHex() {
         TestWriter.testGroupDefinition(
-            "const int\n\tformat = hex",
-            new GroupDefinition(GroupScope.Global.INSTANCE, GroupType.CONST, false, DataType.INT, null, Collections.emptyList(), GroupFormat.HEX)
+            "group int\n\t@format hex",
+            new GroupDefinition(Collections.emptyList(), false, false, DataType.INT, null, Collections.emptyList(), GroupFormat.HEX)
         );
     }
 
     @Test
     public void testFormatBinary() {
         TestWriter.testGroupDefinition(
-            "const int\n\tformat = binary",
-            new GroupDefinition(GroupScope.Global.INSTANCE, GroupType.CONST, false, DataType.INT, null, Collections.emptyList(), GroupFormat.BINARY)
+            "group int\n\t@format binary",
+            new GroupDefinition(Collections.emptyList(), false, false, DataType.INT, null, Collections.emptyList(), GroupFormat.BINARY)
         );
     }
 
     @Test
     public void testFormatOctal() {
         TestWriter.testGroupDefinition(
-            "const int\n\tformat = octal",
-            new GroupDefinition(GroupScope.Global.INSTANCE, GroupType.CONST, false, DataType.INT, null, Collections.emptyList(), GroupFormat.OCTAL)
+            "group int\n\t@format octal",
+            new GroupDefinition(Collections.emptyList(), false, false, DataType.INT, null, Collections.emptyList(), GroupFormat.OCTAL)
         );
     }
 
     @Test
     public void testFormatChar() {
         TestWriter.testGroupDefinition(
-            "const int\n\tformat = char",
-            new GroupDefinition(GroupScope.Global.INSTANCE, GroupType.CONST, false, DataType.INT, null, Collections.emptyList(), GroupFormat.CHAR)
+            "group int\n\t@format char",
+            new GroupDefinition(Collections.emptyList(), false, false, DataType.INT, null, Collections.emptyList(), GroupFormat.CHAR)
         );
     }
 
     @Test
     public void testSimpleConstant() {
-        GroupConstant constant = new GroupConstant(new Literal.Long(0), new LiteralExpression(new Literal.Integer(0)));
+        Expression constant = new LiteralExpression(new Literal.Integer(0));
         TestWriter.testGroupDefinition(
-            "const int\n\t0 = 0",
-            new GroupDefinition(GroupScope.Global.INSTANCE, GroupType.CONST, false, DataType.INT, null, Collections.singletonList(constant), null)
+            "group int\n\t0",
+            new GroupDefinition(Collections.emptyList(), false, false, DataType.INT, null, Collections.singletonList(constant), null)
         );
     }
 
     @Test
     public void testConstantWithFormat() {
-        GroupConstant constant = new GroupConstant(new Literal.Long(0), new LiteralExpression(new Literal.Integer(0)));
+        Expression constant = new LiteralExpression(new Literal.Integer(0));
         TestWriter.testGroupDefinition(
-            "const int\n\tformat = hex\n\t0 = 0",
-            new GroupDefinition(GroupScope.Global.INSTANCE, GroupType.CONST, false, DataType.INT, null, Collections.singletonList(constant), GroupFormat.HEX)
+            "group int\n\t@format hex\n\t0",
+            new GroupDefinition(Collections.emptyList(), false, false, DataType.INT, null, Collections.singletonList(constant), GroupFormat.HEX)
         );
     }
 
     @Test
     public void testLongConstant() {
-        GroupConstant constant = new GroupConstant(new Literal.Long(Long.MAX_VALUE), new LiteralExpression(new Literal.Long(Long.MAX_VALUE)));
+        Expression constant = new LiteralExpression(new Literal.Long(Long.MAX_VALUE));
         TestWriter.testGroupDefinition(
-            "const long\n\t9223372036854775807 = 9223372036854775807L",
-            new GroupDefinition(GroupScope.Global.INSTANCE, GroupType.CONST, false, DataType.LONG, null, Collections.singletonList(constant), null)
+            "group long\n\t9223372036854775807L",
+            new GroupDefinition(Collections.emptyList(), false, false, DataType.LONG, null, Collections.singletonList(constant), null)
         );
     }
 
     @Test
     public void testNegativeLongConstant() {
-        GroupConstant constant = new GroupConstant(new Literal.Long(Long.MIN_VALUE), new UnaryExpression(new LiteralExpression(new Literal.Long(Long.MIN_VALUE)), UnaryExpression.Operator.NEGATE));
+        Expression constant = new UnaryExpression(new LiteralExpression(new Literal.Long(Long.MIN_VALUE)), UnaryExpression.Operator.NEGATE);
         TestWriter.testGroupDefinition(
-            "const long\n\t-9223372036854775808 = -9223372036854775808L",
-            new GroupDefinition(GroupScope.Global.INSTANCE, GroupType.CONST, false, DataType.LONG, null, Collections.singletonList(constant), null)
+            "group long\n\t-9223372036854775808L",
+            new GroupDefinition(Collections.emptyList(), false, false, DataType.LONG, null, Collections.singletonList(constant), null)
         );
     }
 
     @Test
     public void testHexLongConstant() {
-        GroupConstant constant = new GroupConstant(new Literal.Long(-1, 16), new LiteralExpression(new Literal.Long(-1, 16)));
+        Expression constant = new LiteralExpression(new Literal.Long(-1, 16));
         TestWriter.testGroupDefinition(
-            "const long\n\t0xffffffffffffffff = 0xffffffffffffffffL",
-            new GroupDefinition(GroupScope.Global.INSTANCE, GroupType.CONST, false, DataType.LONG, null, Collections.singletonList(constant), null)
+            "group long\n\t0xffffffffffffffffL",
+            new GroupDefinition(Collections.emptyList(), false, false, DataType.LONG, null, Collections.singletonList(constant), null)
         );
     }
 
     @Test
     public void testDecimalConstant() {
-        GroupConstant constant = new GroupConstant(new Literal.Long(10, 2), new LiteralExpression(new Literal.Integer(10, 2)));
+        Expression constant = new LiteralExpression(new Literal.Integer(10, 2));
         TestWriter.testGroupDefinition(
-            "const int\n\t0b1010 = 0b1010",
-            new GroupDefinition(GroupScope.Global.INSTANCE, GroupType.CONST, false, DataType.INT, null, Collections.singletonList(constant), null)
+            "group int\n\t0b1010",
+            new GroupDefinition(Collections.emptyList(), false, false, DataType.INT, null, Collections.singletonList(constant), null)
         );
     }
 
     @Test
     public void testOctalConstant() {
-        GroupConstant constant = new GroupConstant(new Literal.Long(511, 8), new LiteralExpression(new Literal.Integer(511, 8)));
+        Expression constant = new LiteralExpression(new Literal.Integer(511, 8));
         TestWriter.testGroupDefinition(
-            "const int\n\t0777 = 0777",
-            new GroupDefinition(GroupScope.Global.INSTANCE, GroupType.CONST, false, DataType.INT, null, Collections.singletonList(constant), null)
+            "group int\n\t0777",
+            new GroupDefinition(Collections.emptyList(), false, false, DataType.INT, null, Collections.singletonList(constant), null)
         );
     }
 
     @Test
     public void testDoubleConstant() {
-        GroupConstant constant = new GroupConstant(new Literal.Double(1.5), new LiteralExpression(new Literal.Double(1.5)));
+        Expression constant = new LiteralExpression(new Literal.Double(1.5));
         TestWriter.testGroupDefinition(
-            "const double\n\t1.5 = 1.5",
-            new GroupDefinition(GroupScope.Global.INSTANCE, GroupType.CONST, false, DataType.DOUBLE, null, Collections.singletonList(constant), null)
+            "group double\n\t1.5",
+            new GroupDefinition(Collections.emptyList(), false, false, DataType.DOUBLE, null, Collections.singletonList(constant), null)
         );
     }
 
     @Test
     public void testStringConstant() {
-        GroupConstant constant = new GroupConstant(new Literal.String(""), new LiteralExpression(new Literal.String("")));
+        Expression constant = new LiteralExpression(new Literal.String(""));
         TestWriter.testGroupDefinition(
-            "const String\n\t\"\" = \"\"",
-            new GroupDefinition(GroupScope.Global.INSTANCE, GroupType.CONST, false, DataType.STRING, null, Collections.singletonList(constant), null)
-        );
-    }
-
-    @Test
-    public void testClassConstant() {
-        GroupConstant constant = new GroupConstant(new Literal.Class("LFoo;"), new LiteralExpression(new Literal.Integer(0)));
-        TestWriter.testGroupDefinition(
-            "const Class\n\tclass LFoo; = 0",
-            new GroupDefinition(GroupScope.Global.INSTANCE, GroupType.CONST, false, DataType.CLASS, null, Collections.singletonList(constant), null)
-        );
-    }
-
-    @Test
-    public void testNaNConstant() {
-        GroupConstant constant = new GroupConstant(new Literal.Double(Double.NaN), new LiteralExpression(new Literal.Double(0.0)));
-        TestWriter.testGroupDefinition(
-            "const double\n\tNaN = 0.0",
-            new GroupDefinition(GroupScope.Global.INSTANCE, GroupType.CONST, false, DataType.DOUBLE, null, Collections.singletonList(constant), null)
-        );
-    }
-
-    @Test
-    public void testInfinityConstant() {
-        GroupConstant constant = new GroupConstant(new Literal.Double(Double.POSITIVE_INFINITY), new LiteralExpression(new Literal.Double(0.0)));
-        TestWriter.testGroupDefinition(
-            "const double\n\tInfinity = 0.0",
-            new GroupDefinition(GroupScope.Global.INSTANCE, GroupType.CONST, false, DataType.DOUBLE, null, Collections.singletonList(constant), null)
-        );
-    }
-
-    @Test
-    public void testNegativeInfinityConstant() {
-        GroupConstant constant = new GroupConstant(new Literal.Double(Double.NEGATIVE_INFINITY), new LiteralExpression(new Literal.Double(0.0)));
-        TestWriter.testGroupDefinition(
-            "const double\n\t-Infinity = 0.0",
-            new GroupDefinition(GroupScope.Global.INSTANCE, GroupType.CONST, false, DataType.DOUBLE, null, Collections.singletonList(constant), null)
-        );
-    }
-
-    @Test
-    public void testNullConstant() {
-        GroupConstant constant = new GroupConstant(Literal.Null.INSTANCE, new LiteralExpression(new Literal.String("")));
-        TestWriter.testGroupDefinition(
-            "const String\n\tnull = \"\"",
-            new GroupDefinition(GroupScope.Global.INSTANCE, GroupType.CONST, false, DataType.STRING, null, Collections.singletonList(constant), null)
+            "group String\n\t\"\"",
+            new GroupDefinition(Collections.emptyList(), false, false, DataType.STRING, null, Collections.singletonList(constant), null)
         );
     }
 }

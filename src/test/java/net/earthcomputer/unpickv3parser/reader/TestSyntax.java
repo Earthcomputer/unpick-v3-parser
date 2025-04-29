@@ -1,17 +1,18 @@
 package net.earthcomputer.unpickv3parser.reader;
 
 import net.earthcomputer.unpickv3parser.tree.DataType;
-import net.earthcomputer.unpickv3parser.tree.GroupConstant;
 import net.earthcomputer.unpickv3parser.tree.GroupDefinition;
 import net.earthcomputer.unpickv3parser.tree.GroupFormat;
 import net.earthcomputer.unpickv3parser.tree.GroupScope;
-import net.earthcomputer.unpickv3parser.tree.GroupType;
 import net.earthcomputer.unpickv3parser.tree.Literal;
 import net.earthcomputer.unpickv3parser.tree.TargetField;
 import net.earthcomputer.unpickv3parser.tree.TargetMethod;
 import net.earthcomputer.unpickv3parser.tree.UnpickV3Visitor;
 import net.earthcomputer.unpickv3parser.tree.expr.CastExpression;
+import net.earthcomputer.unpickv3parser.tree.expr.Expression;
 import net.earthcomputer.unpickv3parser.tree.expr.ExpressionVisitor;
+import net.earthcomputer.unpickv3parser.tree.expr.FieldExpression;
+import net.earthcomputer.unpickv3parser.tree.expr.LiteralExpression;
 import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
@@ -45,8 +46,8 @@ public final class TestSyntax {
         TestReader.test("syntax/data_type", new UnpickV3Visitor() {
             @Override
             public void visitGroupDefinition(GroupDefinition groupDefinition) {
-                for (GroupConstant constant : groupDefinition.constants) {
-                    constant.value.accept(new ExpressionVisitor() {
+                for (Expression constant : groupDefinition.constants) {
+                    constant.accept(new ExpressionVisitor() {
                         @Override
                         public void visitCastExpression(CastExpression castExpression) {
                             dataTypes.add(castExpression.castType);
@@ -94,52 +95,67 @@ public final class TestSyntax {
     @Test
     public void testGroupDefinition() throws IOException {
         List<@Nullable String> groupNames = new ArrayList<>();
-        List<GroupType> groupTypes = new ArrayList<>();
+        List<Boolean> groupFlags = new ArrayList<>();
         List<DataType> groupDataTypes = new ArrayList<>();
         List<Boolean> groupStrict = new ArrayList<>();
         List<List<Object>> groupConstants = new ArrayList<>();
         List<@Nullable GroupFormat> groupFormats = new ArrayList<>();
-        List<@Nullable String> groupPackageScopes = new ArrayList<>();
-        List<@Nullable String> groupClassScopes = new ArrayList<>();
-        List<@Nullable String> groupMethodScopes = new ArrayList<>();
+        List<List<String>> groupPackageScopes = new ArrayList<>();
+        List<List<String>> groupClassScopes = new ArrayList<>();
+        List<List<String>> groupMethodScopes = new ArrayList<>();
         TestReader.test("syntax/group_definition", new UnpickV3Visitor() {
             @Override
             public void visitGroupDefinition(GroupDefinition groupDefinition) {
                 groupNames.add(groupDefinition.name);
-                groupTypes.add(groupDefinition.type);
+                groupFlags.add(groupDefinition.flags);
                 groupDataTypes.add(groupDefinition.dataType);
                 groupStrict.add(groupDefinition.strict);
                 groupFormats.add(groupDefinition.format);
-                if (groupDefinition.scope instanceof GroupScope.Package) {
-                    groupPackageScopes.add(((GroupScope.Package) groupDefinition.scope).packageName);
-                } else {
-                    groupPackageScopes.add(null);
-                }
-                if (groupDefinition.scope instanceof GroupScope.Class) {
-                    groupClassScopes.add(((GroupScope.Class) groupDefinition.scope).className);
-                } else {
-                    groupClassScopes.add(null);
-                }
-                if (groupDefinition.scope instanceof GroupScope.Method) {
-                    GroupScope.Method methodScope = (GroupScope.Method) groupDefinition.scope;
-                    groupMethodScopes.add(methodScope.className + "." + methodScope.methodName + methodScope.methodDesc);
-                } else {
-                    groupMethodScopes.add(null);
-                }
-                groupConstants.add(groupDefinition.constants.stream().map(constant -> {
-                    if (constant.key instanceof Literal.Long) {
-                        return ((Literal.Long) constant.key).value;
-                    } else if (constant.key instanceof Literal.Double) {
-                        return ((Literal.Double) constant.key).value;
-                    } else if (constant.key instanceof Literal.String) {
-                        return ((Literal.String) constant.key).value;
-                    } else if (constant.key instanceof Literal.Class) {
-                        return ((Literal.Class) constant.key).descriptor;
-                    } else if (constant.key instanceof Literal.Null) {
-                        return null;
+                List<String> packageScopes = new ArrayList<>();
+                List<String> classScopes = new ArrayList<>();
+                List<String> methodScopes = new ArrayList<>();
+                for (GroupScope scope : groupDefinition.scopes) {
+                    if (scope instanceof GroupScope.Package) {
+                        packageScopes.add(((GroupScope.Package) scope).packageName);
+                    } else if (scope instanceof GroupScope.Class) {
+                        classScopes.add(((GroupScope.Class) scope).className);
+                    } else if (scope instanceof GroupScope.Method) {
+                        GroupScope.Method methodScope = (GroupScope.Method) scope;
+                        methodScopes.add(methodScope.className + "." + methodScope.methodName + methodScope.methodDesc);
                     } else {
-                        throw new AssertionError("Unexpected constant key type: " + constant.key.getClass().getName());
+                        throw new AssertionError("Unknown scope type: " + scope.getClass().getName());
                     }
+                }
+                groupPackageScopes.add(packageScopes);
+                groupClassScopes.add(classScopes);
+                groupMethodScopes.add(methodScopes);
+                groupConstants.add(groupDefinition.constants.stream().flatMap(constant -> {
+                    List<Object> constants = new ArrayList<>();
+                    constant.accept(new ExpressionVisitor() {
+                        @Override
+                        public void visitLiteralExpression(LiteralExpression literalExpression) {
+                            Literal constant = literalExpression.literal;
+                            if (constant instanceof Literal.Integer) {
+                                constants.add(((Literal.Integer) constant).value);
+                            } else if (constant instanceof Literal.Long) {
+                                constants.add(((Literal.Long) constant).value);
+                            } else if (constant instanceof Literal.Float) {
+                                constants.add(((Literal.Float) constant).value);
+                            } else if (constant instanceof Literal.Double) {
+                                constants.add(((Literal.Double) constant).value);
+                            } else if (constant instanceof Literal.String) {
+                                constants.add(((Literal.String) constant).value);
+                            } else {
+                                throw new AssertionError("Unexpected constant key type: " + constant.getClass().getName());
+                            }
+                        }
+
+                        @Override
+                        public void visitFieldExpression(FieldExpression fieldExpression) {
+                            constants.add(fieldExpression.className + "." + fieldExpression.fieldName);
+                        }
+                    });
+                    return constants.stream();
                 }).collect(Collectors.toList()));
             }
         });
@@ -165,36 +181,46 @@ public final class TestSyntax {
             "d",
             "e",
             "f",
+            "af",
+            "bf",
+            "cf",
+            "df",
+            null,
             null,
             null,
             null
         ), groupNames);
         assertEquals(Arrays.asList(
-            GroupType.CONST,
-            GroupType.CONST,
-            GroupType.CONST,
-            GroupType.CONST,
-            GroupType.CONST,
-            GroupType.CONST,
-            GroupType.CONST,
-            GroupType.CONST,
-            GroupType.CONST,
-            GroupType.CONST,
-            GroupType.CONST,
-            GroupType.CONST,
-            GroupType.CONST,
-            GroupType.FLAG,
-            GroupType.FLAG,
-            GroupType.CONST,
-            GroupType.CONST,
-            GroupType.CONST,
-            GroupType.CONST,
-            GroupType.CONST,
-            GroupType.CONST,
-            GroupType.CONST,
-            GroupType.CONST,
-            GroupType.CONST
-        ), groupTypes);
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            true,
+            true,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+        ), groupFlags);
         assertEquals(Arrays.asList(
             DataType.INT,
             DataType.INT,
@@ -217,35 +243,45 @@ public final class TestSyntax {
             DataType.LONG,
             DataType.INT,
             DataType.LONG,
+            DataType.FLOAT,
+            DataType.FLOAT,
+            DataType.DOUBLE,
+            DataType.DOUBLE,
+            DataType.INT,
             DataType.INT,
             DataType.INT,
             DataType.INT
         ), groupDataTypes);
         assertEquals(Arrays.asList(
             Collections.emptyList(),
-            Collections.singletonList(0L),
-            Collections.singletonList(0L),
-            Collections.singletonList(0L),
-            Collections.singletonList(0L),
-            Arrays.asList(0L, 1.0, Double.NaN, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY),
-            Arrays.asList(0L, 1.0),
-            Arrays.asList(0L, 1.0, Double.NaN, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY),
-            Arrays.asList(0L, 1.0),
-            Arrays.asList("", null),
+            Collections.singletonList(0),
+            Collections.singletonList(0),
+            Collections.singletonList(0),
+            Collections.singletonList(0),
+            Arrays.asList(0, 1.0),
+            Arrays.asList(0, 1.0),
+            Arrays.asList(0, 1.0),
+            Arrays.asList(0, 1.0),
             Collections.singletonList(""),
-            Arrays.asList("[I", null),
-            Collections.singletonList("[I"),
-            Collections.singletonList(0L),
-            Collections.singletonList(0L),
+            Collections.singletonList(""),
+            Collections.singletonList("Foo.bar"),
+            Collections.singletonList("Foo.bar"),
+            Collections.singletonList(0),
+            Collections.singletonList(0),
             Collections.emptyList(),
             Collections.emptyList(),
             Collections.emptyList(),
             Collections.emptyList(),
             Collections.emptyList(),
-            Collections.singletonList(0L),
-            Collections.singletonList(0L),
-            Collections.singletonList(0L),
-            Collections.singletonList(0L)
+            Collections.singletonList(0),
+            Collections.emptyList(),
+            Collections.emptyList(),
+            Collections.emptyList(),
+            Collections.emptyList(),
+            Collections.singletonList(0),
+            Collections.singletonList(0),
+            Collections.singletonList(0),
+            Collections.emptyList()
         ), groupConstants);
         assertEquals(Arrays.asList(
             null,
@@ -269,29 +305,36 @@ public final class TestSyntax {
             GroupFormat.OCTAL,
             GroupFormat.CHAR,
             GroupFormat.DECIMAL,
+            GroupFormat.DECIMAL,
+            GroupFormat.HEX,
+            GroupFormat.DECIMAL,
+            GroupFormat.HEX,
+            null,
             null,
             null,
             null
         ), groupFormats);
         for (int i = 0; i < groupPackageScopes.size(); i++) {
-            if (i == 21) {
-                assertEquals("foo.bar", groupPackageScopes.get(i));
+            if (i == 25) {
+                assertEquals(Collections.singletonList("foo.bar"), groupPackageScopes.get(i));
+            } else if (i == 28) {
+                assertEquals(Arrays.asList("foo.bar", "baz.quux"), groupPackageScopes.get(i));
             } else {
-                assertNull(groupPackageScopes.get(i));
+                assertTrue(groupPackageScopes.get(i).isEmpty());
             }
         }
         for (int i = 0; i < groupClassScopes.size(); i++) {
-            if (i == 22) {
-                assertEquals("foo.Bar", groupClassScopes.get(i));
+            if (i == 26) {
+                assertEquals(Collections.singletonList("foo.Bar"), groupClassScopes.get(i));
             } else {
-                assertNull(groupClassScopes.get(i));
+                assertTrue(groupClassScopes.get(i).isEmpty());
             }
         }
         for (int i = 0; i < groupMethodScopes.size(); i++) {
-            if (i == 23) {
-                assertEquals("foo.Bar.baz()V", groupMethodScopes.get(i));
+            if (i == 27) {
+                assertEquals(Collections.singletonList("foo.Bar.baz()V"), groupMethodScopes.get(i));
             } else {
-                assertNull(groupMethodScopes.get(i));
+                assertTrue(groupMethodScopes.get(i).isEmpty());
             }
         }
         for (int i = 0; i < groupStrict.size(); i++) {
@@ -301,106 +344,61 @@ public final class TestSyntax {
 
     @Test
     public void testClassNameTwoDots() throws IOException {
-        TestReader.assertThrowsParseError("syntax/invalid/class_name_two_dots", 2, 18);
+        TestReader.assertThrowsParseError("syntax/invalid/class_name_two_dots", 2, 18, "Expected identifier before '.' token");
     }
 
     @Test
     public void testMethodNameLessThan() throws IOException {
-        TestReader.assertThrowsParseError("syntax/invalid/method_name_less_than", 2, 25);
+        TestReader.assertThrowsParseError("syntax/invalid/method_name_less_than", 2, 25, "Expected identifier before '(' token");
     }
 
     @Test
     public void testMethodNameMissingGreaterThan() throws IOException {
-        TestReader.assertThrowsParseError("syntax/invalid/method_name_missing_greater_than", 2, 29);
+        TestReader.assertThrowsParseError("syntax/invalid/method_name_missing_greater_than", 2, 29, "Expected '>' before '(' token");
     }
 
     @Test
     public void testMethodNameAngledBracketsIncorrect() throws IOException {
-        TestReader.assertThrowsParseError("syntax/invalid/method_name_angled_brackets_incorrect", 2, 24);
+        TestReader.assertThrowsParseError("syntax/invalid/method_name_angled_brackets_incorrect", 2, 24, "Expected identifier before 'bar' token");
     }
 
     @Test
     public void testTargetMethodDuplicateParam() throws IOException {
-        TestReader.assertThrowsParseError("syntax/invalid/target_method_duplicate_param", 4, 11);
+        TestReader.assertThrowsParseError("syntax/invalid/target_method_duplicate_param", 4, 11, "Specified parameter 0 twice");
     }
 
     @Test
     public void testTargetMethodDuplicateReturn() throws IOException {
-        TestReader.assertThrowsParseError("syntax/invalid/target_method_duplicate_return", 4, 5);
+        TestReader.assertThrowsParseError("syntax/invalid/target_method_duplicate_return", 4, 5, "Specified return group twice");
     }
 
     @Test
     public void testGroupDefinitionFlagDefaultGroup() throws IOException {
-        TestReader.assertThrowsParseError("syntax/invalid/group_definition_flag_default_group", 2, 1);
+        TestReader.assertThrowsParseError("syntax/invalid/group_definition_flag_default_group", 3, 6, "The flags attribute is not applicable to the default group");
     }
 
     @Test
     public void testGroupDefinitionFlagInvalidDataType() throws IOException {
-        TestReader.assertThrowsParseError("syntax/invalid/group_definition_flag_invalid_data_type", 2, 6);
+        TestReader.assertThrowsParseError("syntax/invalid/group_definition_flag_invalid_data_type", 3, 6, "The flags attribute is not applicable to this data type");
     }
 
     @Test
-    public void testGroupDefinitionIntConstantForString() throws IOException {
-        TestReader.assertThrowsParseError("syntax/invalid/group_definition_int_constant_for_string", 3, 5);
+    public void testGroupDefinitionMultipleFlags() throws IOException {
+        TestReader.assertThrowsParseError("syntax/invalid/group_definition_multiple_flags", 4, 6, "Duplicate flags attribute");
     }
 
     @Test
-    public void testGroupDefinitionStringConstantForInt() throws IOException {
-        TestReader.assertThrowsParseError("syntax/invalid/group_definition_string_constant_for_int", 3, 5);
-    }
-
-    @Test
-    public void testGroupDefinitionFloatConstantForInt() throws IOException {
-        TestReader.assertThrowsParseError("syntax/invalid/group_definition_float_constant_for_int", 3, 5);
-    }
-
-    @Test
-    public void testGroupDefinitionStringConstantForFloat() throws IOException {
-        TestReader.assertThrowsParseError("syntax/invalid/group_definition_string_constant_for_float", 3, 5);
-    }
-
-    @Test
-    public void testGroupDefinitionIntConstantForClass() throws IOException {
-        TestReader.assertThrowsParseError("syntax/invalid/group_definition_int_constant_for_class", 3, 5);
-    }
-
-    @Test
-    public void testGroupDefinitionClassConstantForInt() throws IOException {
-        TestReader.assertThrowsParseError("syntax/invalid/group_definition_class_constant_for_int", 3, 12);
-    }
-
-    @Test
-    public void testGroupDefinitionClassConstantForString() throws IOException {
-        TestReader.assertThrowsParseError("syntax/invalid/group_definition_class_constant_for_string", 3, 12);
-    }
-
-    @Test
-    public void testGroupDefinitionStringConstantForClass() throws IOException {
-        TestReader.assertThrowsParseError("syntax/invalid/group_definition_string_constant_for_class", 3, 5);
-    }
-
-    @Test
-    public void testGroupDefinitionNullConstantForInt() throws IOException {
-        TestReader.assertThrowsParseError("syntax/invalid/group_definition_null_constant_for_int", 3, 5);
-    }
-
-    @Test
-    public void testGroupDefinitionNullConstantForFloat() throws IOException {
-        TestReader.assertThrowsParseError("syntax/invalid/group_definition_null_constant_for_float", 3, 5);
-    }
-
-    @Test
-    public void testGroupDefinitionDuplicateKey() throws IOException {
-        TestReader.assertThrowsParseError("syntax/invalid/group_definition_duplicate_key", 4, 5);
+    public void testGroupDefinitionMultipleStrict() throws IOException {
+        TestReader.assertThrowsParseError("syntax/invalid/group_definition_multiple_strict", 4, 6, "Duplicate strict attribute");
     }
 
     @Test
     public void testGroupDefinitionMultipleFormats() throws IOException {
-        TestReader.assertThrowsParseError("syntax/invalid/group_definition_multiple_formats", 4, 5);
+        TestReader.assertThrowsParseError("syntax/invalid/group_definition_multiple_formats", 4, 6, "Duplicate format attribute");
     }
 
     @Test
     public void testGroupDefinitionInvalidFormat() throws IOException {
-        TestReader.assertThrowsParseError("syntax/invalid/group_definition_invalid_format", 3, 14);
+        TestReader.assertThrowsParseError("syntax/invalid/group_definition_invalid_format", 3, 13, "Expected group format before 'foo' token");
     }
 }

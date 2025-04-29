@@ -1,23 +1,29 @@
 unpick v3
 
 # apply to floats in the default group globally
-const strict float
-    3.1415927 = net.minecraft.util.Mth.PI
-    1.0471976 = net.minecraft.util.Mth.PI / 3
+group float
+    @strict # don't apply to double literals
+    net.minecraft.util.Mth.PI
+    net.minecraft.util.Mth.PI / 3
 
 # apply to strings in the default group globally
-const String
-    "1.21.4" = net.minecraft.SharedConstants.VERSION_STRING
+group String
+    net.minecraft.SharedConstants.VERSION_STRING
+
+# an example of a wildcard field
+group int LevelEvents
+    net.minecraft.world.level.block.LevelEvent.*
 
 # apply to ints in the default group within the scope of ClientboundCustomPayloadPacket
-scoped class net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket const int
-    1048576 = net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket.MAX_PAYLOAD_SIZE
+group int
+    @scope class net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket
+    net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket.MAX_PAYLOAD_SIZE
 
 # apply to ints with the group "ARGBColor"
-const int ARGBColor
-    format = hex # format unrecongized constants as hex
-    0xffffffff = net.minecraft.util.CommonColors.WHITE
-    0xff000000 = net.minecraft.util.CommonColors.BLACK
+group int ARGBColor
+    @format hex # format unrecongized constants as hex
+    net.minecraft.util.CommonColors.WHITE
+    net.minecraft.util.CommonColors.BLACK
 
 # apply the group "ARGBColor" to ints flowing into the 5th parameter of of GuiGraphics.fill
 target_method net.minecraft.client.gui.GuiGraphics fill (IIIII)V
@@ -28,8 +34,9 @@ target_method net.minecraft.util.ARGB color (IIII)I
     return ARGBColor
 
 # apply to ints with the group "SetBlockFlag"
-flag int SetBlockFlag
-    3 = net.minecraft.world.level.block.Block.UPDATE_ALL
-    1 = net.minecraft.world.level.block.Block.UPDATE_NEIGHBORS
+group int SetBlockFlag
+    @flags
+    net.minecraft.world.level.block.Block.UPDATE_ALL
+    net.minecraft.world.level.block.Block.UPDATE_NEIGHBORS
 
 target_field net.minecraft.core.particles.ColorParticleOption color I ARGBColor

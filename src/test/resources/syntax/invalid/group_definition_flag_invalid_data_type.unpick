@@ -1,2 +1,3 @@
 unpick v3
-flag float g
+group float g
+    @flags

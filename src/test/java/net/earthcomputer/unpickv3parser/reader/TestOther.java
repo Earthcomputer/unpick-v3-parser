@@ -12,6 +12,6 @@ public final class TestOther {
 
     @Test
     public void testMissingHeader() throws IOException {
-        TestReader.assertThrowsParseError("other/invalid/missing_header", 1, 1);
+        TestReader.assertThrowsParseError("other/invalid/missing_header", 1, 1, "Missing version marker");
     }
 }

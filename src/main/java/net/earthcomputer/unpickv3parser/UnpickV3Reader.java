@@ -1,11 +1,9 @@
 package net.earthcomputer.unpickv3parser;
 
 import net.earthcomputer.unpickv3parser.tree.DataType;
-import net.earthcomputer.unpickv3parser.tree.GroupConstant;
 import net.earthcomputer.unpickv3parser.tree.GroupDefinition;
 import net.earthcomputer.unpickv3parser.tree.GroupFormat;
 import net.earthcomputer.unpickv3parser.tree.GroupScope;
-import net.earthcomputer.unpickv3parser.tree.GroupType;
 import net.earthcomputer.unpickv3parser.tree.Literal;
 import net.earthcomputer.unpickv3parser.tree.TargetField;
 import net.earthcomputer.unpickv3parser.tree.TargetMethod;
@@ -95,25 +93,8 @@ public final class UnpickV3Reader implements AutoCloseable {
             case "target_method":
                 visitor.visitTargetMethod(parseTargetMethod());
                 break;
-            case "scoped":
-                GroupScope scope = parseGroupScope();
-                token = nextToken("group type", TokenType.IDENTIFIER);
-                switch (token) {
-                    case "const":
-                        visitor.visitGroupDefinition(parseGroupDefinition(scope, GroupType.CONST));
-                        break;
-                    case "flag":
-                        visitor.visitGroupDefinition(parseGroupDefinition(scope, GroupType.FLAG));
-                        break;
-                    default:
-                        throw expectedTokenError("group type", token);
-                }
-                break;
-            case "const":
-                visitor.visitGroupDefinition(parseGroupDefinition(GroupScope.Global.INSTANCE, GroupType.CONST));
-                break;
-            case "flag":
-                visitor.visitGroupDefinition(parseGroupDefinition(GroupScope.Global.INSTANCE, GroupType.FLAG));
+            case "group":
+                visitor.visitGroupDefinition(parseGroupDefinition());
                 break;
             default:
                 throw expectedTokenError("unpick item", token);
@@ -137,31 +118,21 @@ public final class UnpickV3Reader implements AutoCloseable {
         }
     }
 
-    private GroupDefinition parseGroupDefinition(GroupScope scope, GroupType type) throws IOException {
-        int typeLine = lastTokenLine;
-        int typeColumn = lastTokenColumn;
-
-        boolean strict = false;
-        if ("strict".equals(peekToken())) {
-            nextToken();
-            strict = true;
-        }
-
+    private GroupDefinition parseGroupDefinition() throws IOException {
         DataType dataType = parseDataType();
         if (!isDataTypeValidInGroup(dataType)) {
             throw parseError("Data type not allowed in group: " + dataType);
         }
-        if (type == GroupType.FLAG && dataType != DataType.INT && dataType != DataType.LONG) {
-            throw parseError("Data type not allowed for flag constants");
-        }
 
         String name = peekTokenType() == TokenType.IDENTIFIER ? nextToken() : null;
-        if (name == null && type != GroupType.CONST) {
-            throw parseError("Non-const group type used for default group", typeLine, typeColumn);
-        }
 
-        List<GroupConstant> constants = new ArrayList<>();
+        List<GroupScope> scopes = new ArrayList<>();
+        boolean flags = false;
+        boolean strict = false;
+        List<Expression> constants = new ArrayList<>();
         GroupFormat format = null;
+
+        boolean finishedAttributes = false;
 
         while (true) {
             String token = nextToken();
@@ -177,102 +148,60 @@ public final class UnpickV3Reader implements AutoCloseable {
             }
             nextToken();
 
-            token = nextToken();
-            switch (lastTokenType) {
-                case IDENTIFIER:
-                    if ("format".equals(token)) {
-                        if (format != null) {
-                            throw parseError("Duplicate format declaration");
-                        }
-                        expectToken("=");
-                        format = parseGroupFormat();
+            if ("@".equals(peekToken())) {
+                nextToken();
+                if (finishedAttributes) {
+                    throw parseError("Found attribute after expression");
+                }
+                token = nextToken("attribute name", TokenType.IDENTIFIER);
+                switch (token) {
+                    case "scope":
+                        scopes.add(parseGroupScope());
                         break;
-                    }
-                    // fallthrough
-                case OPERATOR: case INTEGER: case DOUBLE: case CHAR: case STRING:
-                    int constantLine = lastTokenLine;
-                    int constantColumn = lastTokenColumn;
-                    GroupConstant constant = parseGroupConstant(token);
-                    if (!isMatchingConstantType(dataType, constant.key)) {
-                        throw parseError("Constant type not valid for group data type", constantLine, constantColumn);
-                    }
-                    if (isDuplicateConstantKey(constants, constant)) {
-                        throw parseError("Duplicate constant key", constantLine, constantColumn);
-                    }
-                    constants.add(constant);
-                    break;
-                default:
-                    throw expectedTokenError("constant", token);
+                    case "flags":
+                        if (flags) {
+                            throw parseError("Duplicate flags attribute");
+                        }
+                        if (dataType != DataType.INT && dataType != DataType.LONG) {
+                            throw parseError("The flags attribute is not applicable to this data type");
+                        }
+                        if (name == null) {
+                            throw parseError("The flags attribute is not applicable to the default group");
+                        }
+                        flags = true;
+                        break;
+                    case "strict":
+                        if (strict) {
+                            throw parseError("Duplicate strict attribute");
+                        }
+                        strict = true;
+                        break;
+                    case "format":
+                        if (format != null) {
+                            throw parseError("Duplicate format attribute");
+                        }
+                        if (dataType != DataType.INT && dataType != DataType.LONG && dataType != DataType.FLOAT && dataType != DataType.DOUBLE) {
+                            throw parseError("The format attribute is not applicable to this data type");
+                        }
+                        format = parseGroupFormat();
+                        if (format != GroupFormat.DECIMAL && format != GroupFormat.HEX && dataType != DataType.INT && dataType != DataType.LONG) {
+                            throw parseError("This format is not applicable to floating point data types");
+                        }
+                        break;
+                    default:
+                        throw expectedTokenError("attribute name", token);
+                }
+            } else {
+                finishedAttributes = true;
+                constants.add(parseExpression(0));
             }
         }
 
-        return new GroupDefinition(scope, type, strict, dataType, name, constants, format);
+        return new GroupDefinition(scopes, flags, strict, dataType, name, constants, format);
     }
 
     private static boolean isDataTypeValidInGroup(DataType type) {
         return type == DataType.INT || type == DataType.LONG || type == DataType.FLOAT || type == DataType.DOUBLE || type == DataType.STRING || type == DataType.CLASS;
-    }
-
-    private static boolean isMatchingConstantType(DataType type, Literal.ConstantKey constantKey) {
-        if (constantKey instanceof Literal.Long) {
-            return type != DataType.STRING && type != DataType.CLASS;
-        } else if (constantKey instanceof Literal.Double) {
-            return type == DataType.FLOAT || type == DataType.DOUBLE;
-        } else if (constantKey instanceof Literal.String) {
-            return type == DataType.STRING;
-        } else if (constantKey instanceof Literal.Class) {
-            return type == DataType.CLASS;
-        } else if (constantKey instanceof Literal.Null) {
-            return type == DataType.STRING || type == DataType.CLASS;
-        } else {
-            throw new AssertionError("Unknown group constant type: " + constantKey.getClass().getName());
-        }
-    }
-
-    private static boolean isDuplicateConstantKey(List<GroupConstant> constants, GroupConstant newConstant) {
-        if (newConstant.key instanceof Literal.Long) {
-            long newValue = ((Literal.Long) newConstant.key).value;
-            for (GroupConstant constant : constants) {
-                if (constant.key instanceof Literal.Long && ((Literal.Long) constant.key).value == newValue) {
-                    return true;
-                }
-                if (constant.key instanceof Literal.Double && ((Literal.Double) constant.key).value == newValue) {
-                    return true;
-                }
-            }
-        } else if (newConstant.key instanceof Literal.Double) {
-            double newValue = ((Literal.Double) newConstant.key).value;
-            for (GroupConstant constant : constants) {
-                if (constant.key instanceof Literal.Long && ((Literal.Long) constant.key).value == newValue) {
-                    return true;
-                }
-                if (constant.key instanceof Literal.Double && ((Literal.Double) constant.key).value == newValue) {
-                    return true;
-                }
-            }
-        } else if (newConstant.key instanceof Literal.String) {
-            String newValue = ((Literal.String) newConstant.key).value;
-            for (GroupConstant constant : constants) {
-                if (constant.key instanceof Literal.String && ((Literal.String) constant.key).value.equals(newValue)) {
-                    return true;
-                }
-            }
-        } else if (newConstant.key instanceof Literal.Class) {
-            String newValue = ((Literal.Class) newConstant.key).descriptor;
-            for (GroupConstant constant : constants) {
-                if (constant.key instanceof Literal.Class && ((Literal.Class) constant.key).descriptor.equals(newValue)) {
-                    return true;
-                }
-            }
-        } else if (newConstant.key instanceof Literal.Null) {
-            for (GroupConstant constant : constants) {
-                if (constant.key instanceof Literal.Null) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
     }
 
     private GroupFormat parseGroupFormat() throws IOException {
@@ -290,64 +219,6 @@ public final class UnpickV3Reader implements AutoCloseable {
                 return GroupFormat.CHAR;
             default:
                 throw expectedTokenError("group format", token);
-        }
-    }
-
-    private GroupConstant parseGroupConstant(String token) throws IOException {
-        Literal.ConstantKey key = parseGroupConstantKey(token);
-        expectToken("=");
-        Expression value = parseExpression(0);
-        return new GroupConstant(key, value);
-    }
-
-    private Literal.ConstantKey parseGroupConstantKey(String token) throws IOException {
-        boolean negative = false;
-        if ("-".equals(token)) {
-            negative = true;
-            token = nextToken();
-        }
-
-        switch (lastTokenType) {
-            case INTEGER:
-                ParsedLong parsedLong = parseLong(token, negative);
-                return new Literal.Long(parsedLong.value, parsedLong.radix);
-            case DOUBLE:
-                return new Literal.Double(parseDouble(token, negative));
-            case CHAR:
-                if (negative) {
-                    throw expectedTokenError("number", token);
-                }
-                return new Literal.Long(unquoteChar(token));
-            case STRING:
-                if (negative) {
-                    throw expectedTokenError("string", token);
-                }
-                return new Literal.String(unquoteString(token));
-            case IDENTIFIER:
-                switch (token) {
-                    case "NaN":
-                        if (negative) {
-                            throw expectedTokenError("number", token);
-                        }
-                        return new Literal.Double(Double.NaN);
-                    case "Infinity":
-                        return new Literal.Double(negative ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY);
-                    case "null":
-                        if (negative) {
-                            throw expectedTokenError("number", token);
-                        }
-                        return Literal.Null.INSTANCE;
-                    case "class":
-                        if (negative) {
-                            throw expectedTokenError("number", token);
-                        }
-                        String desc = nextToken(TokenType.CLASS_DESCRIPTOR);
-                        return new Literal.Class(desc);
-                    default:
-                        throw expectedTokenError(negative ? "number" : "constant", token);
-                }
-            default:
-                throw expectedTokenError(negative ? "number" : "constant", token);
         }
     }
 
@@ -470,12 +341,29 @@ public final class UnpickV3Reader implements AutoCloseable {
 
     private FieldExpression parseFieldExpression(String token) throws IOException {
         expectToken(".");
-        String className = token + "." + parseClassName("field name");
+        StringBuilder classAndFieldNameBuilder = new StringBuilder(token).append('.');
+        while (true) {
+            if ("*".equals(peekToken())) {
+                nextToken();
+                classAndFieldNameBuilder.append('*');
+                break;
+            }
+            classAndFieldNameBuilder.append(nextToken(TokenType.IDENTIFIER));
+            if (!".".equals(peekToken())) {
+                break;
+            }
+            nextToken();
+            classAndFieldNameBuilder.append('.');
+        }
+        String classAndFieldName = classAndFieldNameBuilder.toString();
 
         // the field name has been joined to the class name, split it off
-        int dotIndex = className.lastIndexOf('.');
-        String fieldName = className.substring(dotIndex + 1);
-        className = className.substring(0, dotIndex);
+        int dotIndex = classAndFieldName.lastIndexOf('.');
+        String className = classAndFieldName.substring(0, dotIndex);
+        String fieldName = classAndFieldName.substring(dotIndex + 1);
+        if ("*".equals(fieldName)) {
+            fieldName = null;
+        }
 
         boolean isStatic = true;
         DataType fieldType = null;
@@ -499,7 +387,7 @@ public final class UnpickV3Reader implements AutoCloseable {
     private TargetField parseTargetField() throws IOException {
         String className = parseClassName();
         String fieldName = nextToken(TokenType.IDENTIFIER);
-        String fieldDesc = nextToken(TokenType.CLASS_DESCRIPTOR);
+        String fieldDesc = nextToken(TokenType.TYPE_DESCRIPTOR);
         String groupName = nextToken(TokenType.IDENTIFIER);
         String token = nextToken();
         if (lastTokenType != TokenType.NEWLINE && lastTokenType != TokenType.EOF) {
@@ -896,7 +784,7 @@ public final class UnpickV3Reader implements AutoCloseable {
         lastTokenColumn = column;
         lastTokenLine = reader.getLineNumber();
 
-        if (typeHint == TokenType.CLASS_DESCRIPTOR) {
+        if (typeHint == TokenType.TYPE_DESCRIPTOR) {
             if (skipFieldDescriptor(true)) {
                 return line.substring(lastTokenColumn, column);
             }
@@ -957,7 +845,7 @@ public final class UnpickV3Reader implements AutoCloseable {
 
         // first character of main part of descriptor
         if (column == line.length() || isTokenEnd(line.charAt(column))) {
-            throw parseErrorInToken("Unexpected end to descriptor");
+            throw parseErrorInToken("Unexpected end of descriptor");
         }
         switch (line.charAt(column)) {
             // primitive types
@@ -990,7 +878,7 @@ public final class UnpickV3Reader implements AutoCloseable {
                 return false;
         }
 
-        lastTokenType = TokenType.CLASS_DESCRIPTOR;
+        lastTokenType = TokenType.TYPE_DESCRIPTOR;
         return true;
     }
 
@@ -1272,7 +1160,7 @@ public final class UnpickV3Reader implements AutoCloseable {
         STRING("string"),
         INDENT("indent"),
         NEWLINE("newline"),
-        CLASS_DESCRIPTOR("class descriptor"),
+        TYPE_DESCRIPTOR("type descriptor"),
         METHOD_DESCRIPTOR("method descriptor"),
         OPERATOR("operator"),
         EOF("eof");

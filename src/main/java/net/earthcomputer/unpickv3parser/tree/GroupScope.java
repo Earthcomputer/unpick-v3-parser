@@ -4,13 +4,6 @@ public abstract class GroupScope {
     private GroupScope() {
     }
 
-    public static final class Global extends GroupScope {
-        public static final Global INSTANCE = new Global();
-
-        private Global() {
-        }
-    }
-
     public static final class Package extends GroupScope {
         public final String packageName;
 

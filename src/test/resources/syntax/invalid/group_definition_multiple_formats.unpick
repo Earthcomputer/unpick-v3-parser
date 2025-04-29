@@ -1,4 +1,4 @@
 unpick v3
-const int
-    format = decimal
-    format = hex
+group int
+    @format decimal
+    @format hex

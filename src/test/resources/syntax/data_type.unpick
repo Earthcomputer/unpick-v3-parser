@@ -1,10 +1,10 @@
 unpick v3
-const int
-    0 = (byte) 0
-    1 = (short) 1
-    2 = (int) 2
-    3 = (long) 3
-    4 = (float) 4
-    5 = (double) 5
-    6 = (char) 6
-    7 = (String) 7
+group int
+    (byte) 0
+    (short) 1
+    (int) 2
+    (long) 3
+    (float) 4
+    (double) 5
+    (char) 6
+    (String) 7

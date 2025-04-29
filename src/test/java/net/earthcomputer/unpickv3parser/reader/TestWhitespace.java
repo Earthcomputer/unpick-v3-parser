@@ -31,17 +31,17 @@ public final class TestWhitespace {
 
     @Test
     public void testCommentOnFirstLine() throws IOException {
-        TestReader.assertThrowsParseError("whitespace/invalid/comment_on_first_line", 1, 1);
+        TestReader.assertThrowsParseError("whitespace/invalid/comment_on_first_line", 1, 1, "Missing version marker");
     }
 
     @Test
     public void testWhitespaceBeforeFirstLine() throws IOException {
-        TestReader.assertThrowsParseError("whitespace/invalid/whitespace_before_first_line", 1, 1);
+        TestReader.assertThrowsParseError("whitespace/invalid/whitespace_before_first_line", 1, 1, "Missing version marker");
     }
 
     @Test
     public void testInvalidIndent() throws IOException {
-        TestReader.assertThrowsParseError("whitespace/invalid/indent", 3, 1);
+        TestReader.assertThrowsParseError("whitespace/invalid/indent", 3, 1, "Expected unpick item before '    ' token");
     }
 
     private static void checkTargetFields(String file, int expectedCount) throws IOException {

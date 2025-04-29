@@ -2,10 +2,7 @@ package net.earthcomputer.unpickv3parser.writer;
 
 import net.earthcomputer.unpickv3parser.UnpickV3Writer;
 import net.earthcomputer.unpickv3parser.tree.DataType;
-import net.earthcomputer.unpickv3parser.tree.GroupConstant;
 import net.earthcomputer.unpickv3parser.tree.GroupDefinition;
-import net.earthcomputer.unpickv3parser.tree.GroupScope;
-import net.earthcomputer.unpickv3parser.tree.GroupType;
 import net.earthcomputer.unpickv3parser.tree.Literal;
 import net.earthcomputer.unpickv3parser.tree.TargetField;
 import net.earthcomputer.unpickv3parser.tree.TargetMethod;
@@ -24,18 +21,17 @@ public final class TestWhitespace {
 
     @Test
     public void testMultipleEmptyGroups() {
-        TestWriter.test("unpick v3\n\nconst int\n\nconst int\n", visitor -> {
-            visitor.visitGroupDefinition(new GroupDefinition(GroupScope.Global.INSTANCE, GroupType.CONST, false, DataType.INT, null, Collections.emptyList(), null));
-            visitor.visitGroupDefinition(new GroupDefinition(GroupScope.Global.INSTANCE, GroupType.CONST, false, DataType.INT, null, Collections.emptyList(), null));
+        TestWriter.test("unpick v3\n\ngroup int\n\ngroup int\n", visitor -> {
+            visitor.visitGroupDefinition(new GroupDefinition(Collections.emptyList(), false, false, DataType.INT, null, Collections.emptyList(), null));
+            visitor.visitGroupDefinition(new GroupDefinition(Collections.emptyList(), false, false, DataType.INT, null, Collections.emptyList(), null));
         });
     }
 
     @Test
     public void testMultipleGroups() {
-        TestWriter.test("unpick v3\n\nconst int g\n\t0 = 0\n\nconst int\n", visitor -> {
-            GroupConstant constant = new GroupConstant(new Literal.Long(0), new LiteralExpression(new Literal.Integer(0)));
-            visitor.visitGroupDefinition(new GroupDefinition(GroupScope.Global.INSTANCE, GroupType.CONST, false, DataType.INT, "g", Collections.singletonList(constant), null));
-            visitor.visitGroupDefinition(new GroupDefinition(GroupScope.Global.INSTANCE, GroupType.CONST, false, DataType.INT, null, Collections.emptyList(), null));
+        TestWriter.test("unpick v3\n\ngroup int g\n\t0\n\ngroup int\n", visitor -> {
+            visitor.visitGroupDefinition(new GroupDefinition(Collections.emptyList(), false, false, DataType.INT, "g", Collections.singletonList(new LiteralExpression(new Literal.Integer(0))), null));
+            visitor.visitGroupDefinition(new GroupDefinition(Collections.emptyList(), false, false, DataType.INT, null, Collections.emptyList(), null));
         });
     }
 

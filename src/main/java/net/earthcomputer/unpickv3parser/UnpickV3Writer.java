@@ -1,7 +1,6 @@
 package net.earthcomputer.unpickv3parser;
 
 import net.earthcomputer.unpickv3parser.tree.DataType;
-import net.earthcomputer.unpickv3parser.tree.GroupConstant;
 import net.earthcomputer.unpickv3parser.tree.GroupDefinition;
 import net.earthcomputer.unpickv3parser.tree.GroupScope;
 import net.earthcomputer.unpickv3parser.tree.Literal;
@@ -10,6 +9,7 @@ import net.earthcomputer.unpickv3parser.tree.TargetMethod;
 import net.earthcomputer.unpickv3parser.tree.UnpickV3Visitor;
 import net.earthcomputer.unpickv3parser.tree.expr.BinaryExpression;
 import net.earthcomputer.unpickv3parser.tree.expr.CastExpression;
+import net.earthcomputer.unpickv3parser.tree.expr.Expression;
 import net.earthcomputer.unpickv3parser.tree.expr.ExpressionVisitor;
 import net.earthcomputer.unpickv3parser.tree.expr.FieldExpression;
 import net.earthcomputer.unpickv3parser.tree.expr.LiteralExpression;
@@ -42,18 +42,7 @@ public final class UnpickV3Writer extends UnpickV3Visitor {
     public void visitGroupDefinition(GroupDefinition groupDefinition) {
         output.append(LINE_SEPARATOR);
 
-        if (!(groupDefinition.scope instanceof GroupScope.Global)) {
-            writeGroupScope(groupDefinition.scope);
-            output.append(" ");
-        }
-
-        writeLowerCaseEnum(groupDefinition.type);
-        output.append(" ");
-
-        if (groupDefinition.strict) {
-            output.append("strict ");
-        }
-
+        output.append("group ");
         writeDataType(groupDefinition.dataType);
 
         if (groupDefinition.name != null) {
@@ -62,19 +51,35 @@ public final class UnpickV3Writer extends UnpickV3Visitor {
 
         output.append(LINE_SEPARATOR);
 
+        for (GroupScope scope : groupDefinition.scopes) {
+            output.append(indent);
+            writeGroupScope(scope);
+            output.append(LINE_SEPARATOR);
+        }
+
+        if (groupDefinition.flags) {
+            output.append(indent).append("@flags").append(LINE_SEPARATOR);
+        }
+
+        if (groupDefinition.strict) {
+            output.append(indent).append("@strict").append(LINE_SEPARATOR);
+        }
+
         if (groupDefinition.format != null) {
-            output.append(indent).append("format = ");
+            output.append(indent).append("@format ");
             writeLowerCaseEnum(groupDefinition.format);
             output.append(LINE_SEPARATOR);
         }
 
-        for (GroupConstant constant : groupDefinition.constants) {
-            writeGroupConstant(constant);
+        for (Expression constant : groupDefinition.constants) {
+            output.append(indent);
+            constant.accept(new ExpressionWriter());
+            output.append(LINE_SEPARATOR);
         }
     }
 
     private void writeGroupScope(GroupScope scope) {
-        output.append("scoped ");
+        output.append("@scope ");
         if (scope instanceof GroupScope.Package) {
             output.append("package ").append(((GroupScope.Package) scope).packageName);
         } else if (scope instanceof GroupScope.Class) {
@@ -89,37 +94,6 @@ public final class UnpickV3Writer extends UnpickV3Visitor {
                 .append(methodScope.methodDesc);
         } else {
             throw new AssertionError("Unknown group scope type: " + scope.getClass().getName());
-        }
-    }
-
-    private void writeGroupConstant(GroupConstant constant) {
-        output.append(indent);
-        writeGroupConstantKey(constant.key);
-        output.append(" = ");
-        constant.value.accept(new ExpressionWriter());
-        output.append(LINE_SEPARATOR);
-    }
-
-    private void writeGroupConstantKey(Literal.ConstantKey constantKey) {
-        if (constantKey instanceof Literal.Long) {
-            Literal.Long longLiteral = (Literal.Long) constantKey;
-            if (longLiteral.radix == 10) {
-                // treat base 10 as signed
-                output.append(longLiteral.value);
-            } else {
-                writeRadixPrefix(longLiteral.radix);
-                output.append(Long.toUnsignedString(longLiteral.value, longLiteral.radix));
-            }
-        } else if (constantKey instanceof Literal.Double) {
-            output.append(((Literal.Double) constantKey).value);
-        } else if (constantKey instanceof Literal.String) {
-            output.append(quoteString(((Literal.String) constantKey).value, '"'));
-        } else if (constantKey instanceof Literal.Class) {
-            output.append("class ").append(((Literal.Class) constantKey).descriptor);
-        } else if (constantKey instanceof Literal.Null) {
-            output.append("null");
-        } else {
-            throw new AssertionError("Unknown group constant key type: " + constantKey.getClass().getName());
         }
     }
 
@@ -331,7 +305,12 @@ public final class UnpickV3Writer extends UnpickV3Visitor {
 
         @Override
         public void visitFieldExpression(FieldExpression fieldExpression) {
-            output.append(fieldExpression.className).append('.').append(fieldExpression.fieldName);
+            output.append(fieldExpression.className).append('.');
+            if (fieldExpression.fieldName == null) {
+                output.append('*');
+            } else {
+                output.append(fieldExpression.fieldName);
+            }
             if (!fieldExpression.isStatic) {
                 output.append(":instance");
             }

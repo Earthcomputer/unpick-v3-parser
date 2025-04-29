@@ -2,11 +2,7 @@ package net.earthcomputer.unpickv3parser.writer;
 
 import net.earthcomputer.unpickv3parser.UnpickV3Writer;
 import net.earthcomputer.unpickv3parser.tree.DataType;
-import net.earthcomputer.unpickv3parser.tree.GroupConstant;
 import net.earthcomputer.unpickv3parser.tree.GroupDefinition;
-import net.earthcomputer.unpickv3parser.tree.GroupScope;
-import net.earthcomputer.unpickv3parser.tree.GroupType;
-import net.earthcomputer.unpickv3parser.tree.Literal;
 import net.earthcomputer.unpickv3parser.tree.TargetField;
 import net.earthcomputer.unpickv3parser.tree.TargetMethod;
 import net.earthcomputer.unpickv3parser.tree.UnpickV3Visitor;
@@ -31,9 +27,8 @@ public final class TestWriter {
     }
 
     public static void testExpression(String expected, Expression expression) {
-        GroupConstant constant = new GroupConstant(new Literal.Long(0), expression);
-        GroupDefinition groupDefinition = new GroupDefinition(GroupScope.Global.INSTANCE, GroupType.CONST, false, DataType.INT, null, Collections.singletonList(constant), null);
-        testGroupDefinition("const int\n\t0 = " + expected, groupDefinition);
+        GroupDefinition groupDefinition = new GroupDefinition(Collections.emptyList(), false, false, DataType.INT, null, Collections.singletonList(expression), null);
+        testGroupDefinition("group int\n\t" + expected, groupDefinition);
     }
 
     public static void test(String expected, Consumer<UnpickV3Visitor> visitorConsumer) {

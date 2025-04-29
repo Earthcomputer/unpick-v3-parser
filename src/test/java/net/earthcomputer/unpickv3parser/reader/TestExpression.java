@@ -1,7 +1,6 @@
 package net.earthcomputer.unpickv3parser.reader;
 
 import net.earthcomputer.unpickv3parser.tree.DataType;
-import net.earthcomputer.unpickv3parser.tree.GroupConstant;
 import net.earthcomputer.unpickv3parser.tree.GroupDefinition;
 import net.earthcomputer.unpickv3parser.tree.Literal;
 import net.earthcomputer.unpickv3parser.tree.UnpickV3Visitor;
@@ -27,11 +26,10 @@ public final class TestExpression {
         TestReader.test("expression/expression", new UnpickV3Visitor() {
             @Override
             public void visitGroupDefinition(GroupDefinition groupDefinition) {
-                for (GroupConstant constant : groupDefinition.constants) {
-                    expressions.add(constant.value);
-                }
+                expressions.addAll(groupDefinition.constants);
             }
         });
+        assertEquals(20, expressions.size());
         checkExpr0(expressions.get(0));
         checkExpr1(expressions.get(1));
         checkExpr2(expressions.get(2));
@@ -48,6 +46,10 @@ public final class TestExpression {
         checkExpr13(expressions.get(13));
         checkExpr14(expressions.get(14));
         checkExpr15(expressions.get(15));
+        checkExpr16(expressions.get(16));
+        checkExpr17(expressions.get(17));
+        checkExpr18(expressions.get(18));
+        checkExpr19(expressions.get(19));
     }
 
     private static void checkExpr0(Expression expr) {
@@ -179,6 +181,38 @@ public final class TestExpression {
         assertEquals("bar", fieldExpr.fieldName);
     }
 
+    private static void checkExpr16(Expression expr) {
+        FieldExpression fieldExpr = assertInstanceOf(FieldExpression.class, expr);
+        assertEquals("foo.Bar", fieldExpr.className);
+        assertNull(fieldExpr.fieldName);
+        assertNull(fieldExpr.fieldType);
+        assertTrue(fieldExpr.isStatic);
+    }
+
+    private static void checkExpr17(Expression expr) {
+        FieldExpression fieldExpr = assertInstanceOf(FieldExpression.class, expr);
+        assertEquals("foo.Bar", fieldExpr.className);
+        assertNull(fieldExpr.fieldName);
+        assertNull(fieldExpr.fieldType);
+        assertFalse(fieldExpr.isStatic);
+    }
+
+    private static void checkExpr18(Expression expr) {
+        FieldExpression fieldExpr = assertInstanceOf(FieldExpression.class, expr);
+        assertEquals("foo.Bar", fieldExpr.className);
+        assertNull(fieldExpr.fieldName);
+        assertEquals(DataType.BYTE, fieldExpr.fieldType);
+        assertTrue(fieldExpr.isStatic);
+    }
+
+    private static void checkExpr19(Expression expr) {
+        FieldExpression fieldExpr = assertInstanceOf(FieldExpression.class, expr);
+        assertEquals("foo.Bar", fieldExpr.className);
+        assertNull(fieldExpr.fieldName);
+        assertEquals(DataType.BYTE, fieldExpr.fieldType);
+        assertFalse(fieldExpr.isStatic);
+    }
+
     private static void assertLiteral(int value, Expression expr) {
         LiteralExpression literalExpr = assertInstanceOf(LiteralExpression.class, expr);
         Literal.Integer literal = assertInstanceOf(Literal.Integer.class, literalExpr.literal);
@@ -205,31 +239,31 @@ public final class TestExpression {
 
     @Test
     public void testIdentifier() throws IOException {
-        TestReader.assertThrowsParseError("expression/invalid/identifier", 3, 12);
+        TestReader.assertThrowsParseError("expression/invalid/identifier", 3, 8, "Expected '.' before '\\n' token");
     }
 
     @Test
     public void testIdentifierParenthesized() throws IOException {
-        TestReader.assertThrowsParseError("expression/invalid/identifier_parenthesized", 3, 10);
+        TestReader.assertThrowsParseError("expression/invalid/identifier_parenthesized", 3, 6, "Expected data type before 'foo' token");
     }
 
     @Test
     public void testBinaryExpressionUnterminated() throws IOException {
-        TestReader.assertThrowsParseError("expression/invalid/binary_expression_unterminated", 3, 12);
+        TestReader.assertThrowsParseError("expression/invalid/binary_expression_unterminated", 3, 8, "Expected expression before '\\n' token");
     }
 
     @Test
     public void testUnaryExpressionIncomplete() throws IOException {
-        TestReader.assertThrowsParseError("expression/invalid/unary_expression_incomplete", 3, 10);
+        TestReader.assertThrowsParseError("expression/invalid/unary_expression_incomplete", 3, 6, "Expected expression before '\\n' token");
     }
 
     @Test
     public void testUnclosedParentheses() throws IOException {
-        TestReader.assertThrowsParseError("expression/invalid/unclosed_parentheses", 3, 11);
+        TestReader.assertThrowsParseError("expression/invalid/unclosed_parentheses", 3, 7, "Expected ')' before '\\n' token");
     }
 
     @Test
     public void testNonExistentOperator() throws IOException {
-        TestReader.assertThrowsParseError("expression/invalid/nonexistent_operator", 3, 11);
+        TestReader.assertThrowsParseError("expression/invalid/nonexistent_operator", 3, 7, "Expected '\\n' before '@' token");
     }
 }
