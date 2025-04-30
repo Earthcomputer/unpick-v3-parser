@@ -1,5 +1,7 @@
 package net.earthcomputer.unpickv3parser.writer;
 
+import org.junit.jupiter.api.Test;
+
 import net.earthcomputer.unpickv3parser.tree.DataType;
 import net.earthcomputer.unpickv3parser.tree.Literal;
 import net.earthcomputer.unpickv3parser.tree.expr.BinaryExpression;
@@ -8,7 +10,6 @@ import net.earthcomputer.unpickv3parser.tree.expr.FieldExpression;
 import net.earthcomputer.unpickv3parser.tree.expr.LiteralExpression;
 import net.earthcomputer.unpickv3parser.tree.expr.ParenExpression;
 import net.earthcomputer.unpickv3parser.tree.expr.UnaryExpression;
-import org.junit.jupiter.api.Test;
 
 public final class TestExpression {
     @Test
@@ -114,227 +115,227 @@ public final class TestExpression {
     @Test
     public void testBitOrExpression() {
         TestWriter.testExpression(
-            "1 | 2",
-            new BinaryExpression(
-                new LiteralExpression(new Literal.Integer(1)),
-                new LiteralExpression(new Literal.Integer(2)),
-                BinaryExpression.Operator.BIT_OR
-            )
+                "1 | 2",
+                new BinaryExpression(
+                        new LiteralExpression(new Literal.Integer(1)),
+                        new LiteralExpression(new Literal.Integer(2)),
+                        BinaryExpression.Operator.BIT_OR
+                )
         );
     }
 
     @Test
     public void testBitXorExpression() {
         TestWriter.testExpression(
-            "1 ^ 2",
-            new BinaryExpression(
-                new LiteralExpression(new Literal.Integer(1)),
-                new LiteralExpression(new Literal.Integer(2)),
-                BinaryExpression.Operator.BIT_XOR
-            )
+                "1 ^ 2",
+                new BinaryExpression(
+                        new LiteralExpression(new Literal.Integer(1)),
+                        new LiteralExpression(new Literal.Integer(2)),
+                        BinaryExpression.Operator.BIT_XOR
+                )
         );
     }
 
     @Test
     public void testBitAndExpression() {
         TestWriter.testExpression(
-            "1 & 2",
-            new BinaryExpression(
-                new LiteralExpression(new Literal.Integer(1)),
-                new LiteralExpression(new Literal.Integer(2)),
-                BinaryExpression.Operator.BIT_AND
-            )
+                "1 & 2",
+                new BinaryExpression(
+                        new LiteralExpression(new Literal.Integer(1)),
+                        new LiteralExpression(new Literal.Integer(2)),
+                        BinaryExpression.Operator.BIT_AND
+                )
         );
     }
 
     @Test
     public void testBitShiftLeftExpression() {
         TestWriter.testExpression(
-            "1 << 2",
-            new BinaryExpression(
-                new LiteralExpression(new Literal.Integer(1)),
-                new LiteralExpression(new Literal.Integer(2)),
-                BinaryExpression.Operator.BIT_SHIFT_LEFT
-            )
+                "1 << 2",
+                new BinaryExpression(
+                        new LiteralExpression(new Literal.Integer(1)),
+                        new LiteralExpression(new Literal.Integer(2)),
+                        BinaryExpression.Operator.BIT_SHIFT_LEFT
+                )
         );
     }
 
     @Test
     public void testBitShiftRightExpression() {
         TestWriter.testExpression(
-            "1 >> 2",
-            new BinaryExpression(
-                new LiteralExpression(new Literal.Integer(1)),
-                new LiteralExpression(new Literal.Integer(2)),
-                BinaryExpression.Operator.BIT_SHIFT_RIGHT
-            )
+                "1 >> 2",
+                new BinaryExpression(
+                        new LiteralExpression(new Literal.Integer(1)),
+                        new LiteralExpression(new Literal.Integer(2)),
+                        BinaryExpression.Operator.BIT_SHIFT_RIGHT
+                )
         );
     }
 
     @Test
     public void testBitShiftRightUnsignedExpression() {
         TestWriter.testExpression(
-            "1 >>> 2",
-            new BinaryExpression(
-                new LiteralExpression(new Literal.Integer(1)),
-                new LiteralExpression(new Literal.Integer(2)),
-                BinaryExpression.Operator.BIT_SHIFT_RIGHT_UNSIGNED
-            )
+                "1 >>> 2",
+                new BinaryExpression(
+                        new LiteralExpression(new Literal.Integer(1)),
+                        new LiteralExpression(new Literal.Integer(2)),
+                        BinaryExpression.Operator.BIT_SHIFT_RIGHT_UNSIGNED
+                )
         );
     }
 
     @Test
     public void testAddExpression() {
         TestWriter.testExpression(
-            "1 + 2",
-            new BinaryExpression(
-                new LiteralExpression(new Literal.Integer(1)),
-                new LiteralExpression(new Literal.Integer(2)),
-                BinaryExpression.Operator.ADD
-            )
+                "1 + 2",
+                new BinaryExpression(
+                        new LiteralExpression(new Literal.Integer(1)),
+                        new LiteralExpression(new Literal.Integer(2)),
+                        BinaryExpression.Operator.ADD
+                )
         );
     }
 
     @Test
     public void testSubtractExpression() {
         TestWriter.testExpression(
-            "1 - 2",
-            new BinaryExpression(
-                new LiteralExpression(new Literal.Integer(1)),
-                new LiteralExpression(new Literal.Integer(2)),
-                BinaryExpression.Operator.SUBTRACT
-            )
+                "1 - 2",
+                new BinaryExpression(
+                        new LiteralExpression(new Literal.Integer(1)),
+                        new LiteralExpression(new Literal.Integer(2)),
+                        BinaryExpression.Operator.SUBTRACT
+                )
         );
     }
 
     @Test
     public void testMultiplyExpression() {
         TestWriter.testExpression(
-            "1 * 2",
-            new BinaryExpression(
-                new LiteralExpression(new Literal.Integer(1)),
-                new LiteralExpression(new Literal.Integer(2)),
-                BinaryExpression.Operator.MULTIPLY
-            )
+                "1 * 2",
+                new BinaryExpression(
+                        new LiteralExpression(new Literal.Integer(1)),
+                        new LiteralExpression(new Literal.Integer(2)),
+                        BinaryExpression.Operator.MULTIPLY
+                )
         );
     }
 
     @Test
     public void testDivideExpression() {
         TestWriter.testExpression(
-            "1 / 2",
-            new BinaryExpression(
-                new LiteralExpression(new Literal.Integer(1)),
-                new LiteralExpression(new Literal.Integer(2)),
-                BinaryExpression.Operator.DIVIDE
-            )
+                "1 / 2",
+                new BinaryExpression(
+                        new LiteralExpression(new Literal.Integer(1)),
+                        new LiteralExpression(new Literal.Integer(2)),
+                        BinaryExpression.Operator.DIVIDE
+                )
         );
     }
 
     @Test
     public void testModuloExpression() {
         TestWriter.testExpression(
-            "1 % 2",
-            new BinaryExpression(
-                new LiteralExpression(new Literal.Integer(1)),
-                new LiteralExpression(new Literal.Integer(2)),
-                BinaryExpression.Operator.MODULO
-            )
+                "1 % 2",
+                new BinaryExpression(
+                        new LiteralExpression(new Literal.Integer(1)),
+                        new LiteralExpression(new Literal.Integer(2)),
+                        BinaryExpression.Operator.MODULO
+                )
         );
     }
 
     @Test
     public void testNegateExpression() {
         TestWriter.testExpression(
-            "-42",
-            new UnaryExpression(
-                new LiteralExpression(new Literal.Integer(42)),
-                UnaryExpression.Operator.NEGATE
-            )
+                "-42",
+                new UnaryExpression(
+                        new LiteralExpression(new Literal.Integer(42)),
+                        UnaryExpression.Operator.NEGATE
+                )
         );
     }
 
     @Test
     public void testBitNotExpression() {
         TestWriter.testExpression(
-            "~42",
-            new UnaryExpression(
-                new LiteralExpression(new Literal.Integer(42)),
-                UnaryExpression.Operator.BIT_NOT
-            )
+                "~42",
+                new UnaryExpression(
+                        new LiteralExpression(new Literal.Integer(42)),
+                        UnaryExpression.Operator.BIT_NOT
+                )
         );
     }
 
     @Test
     public void testCastExpression() {
         TestWriter.testExpression(
-            "(byte) 42",
-            new CastExpression(
-                DataType.BYTE,
-                new LiteralExpression(new Literal.Integer(42))
-            )
+                "(byte) 42",
+                new CastExpression(
+                        DataType.BYTE,
+                        new LiteralExpression(new Literal.Integer(42))
+                )
         );
     }
 
     @Test
     public void testParenExpression() {
         TestWriter.testExpression(
-            "(42)",
-            new ParenExpression(new LiteralExpression(new Literal.Integer(42)))
+                "(42)",
+                new ParenExpression(new LiteralExpression(new Literal.Integer(42)))
         );
     }
 
     @Test
     public void testFieldExpression() {
         TestWriter.testExpression(
-            "foo.Bar.baz",
-            new FieldExpression("foo.Bar", "baz", null, true)
+                "foo.Bar.baz",
+                new FieldExpression("foo.Bar", "baz", null, true)
         );
     }
 
     @Test
     public void testInstanceFieldExpression() {
         TestWriter.testExpression(
-            "foo.Bar.baz:instance",
-            new FieldExpression("foo.Bar", "baz", null, false)
+                "foo.Bar.baz:instance",
+                new FieldExpression("foo.Bar", "baz", null, false)
         );
     }
 
     @Test
     public void testTypedFieldExpression() {
         TestWriter.testExpression(
-            "foo.Bar.baz:byte",
-            new FieldExpression("foo.Bar", "baz", DataType.BYTE, true)
+                "foo.Bar.baz:byte",
+                new FieldExpression("foo.Bar", "baz", DataType.BYTE, true)
         );
     }
 
     @Test
     public void testTypedInstanceFieldExpression() {
         TestWriter.testExpression(
-            "foo.Bar.baz:instance:byte",
-            new FieldExpression("foo.Bar", "baz", DataType.BYTE, false)
+                "foo.Bar.baz:instance:byte",
+                new FieldExpression("foo.Bar", "baz", DataType.BYTE, false)
         );
     }
 
     @Test
     public void testComplexExpression() {
         TestWriter.testExpression(
-            "(1 + 2) * 3 / foo.Bar.baz",
-            new BinaryExpression(
+                "(1 + 2) * 3 / foo.Bar.baz",
                 new BinaryExpression(
-                    new ParenExpression(
                         new BinaryExpression(
-                            new LiteralExpression(new Literal.Integer(1)),
-                            new LiteralExpression(new Literal.Integer(2)),
-                            BinaryExpression.Operator.ADD
-                        )
-                    ),
-                    new LiteralExpression(new Literal.Integer(3)),
-                    BinaryExpression.Operator.MULTIPLY
-                ),
-                new FieldExpression("foo.Bar", "baz", null, true),
-                BinaryExpression.Operator.DIVIDE
-            )
+                                new ParenExpression(
+                                        new BinaryExpression(
+                                                new LiteralExpression(new Literal.Integer(1)),
+                                                new LiteralExpression(new Literal.Integer(2)),
+                                                BinaryExpression.Operator.ADD
+                                        )
+                                ),
+                                new LiteralExpression(new Literal.Integer(3)),
+                                BinaryExpression.Operator.MULTIPLY
+                        ),
+                        new FieldExpression("foo.Bar", "baz", null, true),
+                        BinaryExpression.Operator.DIVIDE
+                )
         );
     }
 }

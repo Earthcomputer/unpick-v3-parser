@@ -1,8 +1,8 @@
 package net.earthcomputer.unpickv3parser.reader;
 
-import org.junit.jupiter.api.Test;
-
 import java.io.IOException;
+
+import org.junit.jupiter.api.Test;
 
 public final class TestOther {
     @Test

@@ -1,5 +1,10 @@
 package net.earthcomputer.unpickv3parser.writer;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.util.Collections;
+import java.util.function.Consumer;
+
 import net.earthcomputer.unpickv3parser.UnpickV3Writer;
 import net.earthcomputer.unpickv3parser.tree.DataType;
 import net.earthcomputer.unpickv3parser.tree.GroupDefinition;
@@ -7,11 +12,6 @@ import net.earthcomputer.unpickv3parser.tree.TargetField;
 import net.earthcomputer.unpickv3parser.tree.TargetMethod;
 import net.earthcomputer.unpickv3parser.tree.UnpickV3Visitor;
 import net.earthcomputer.unpickv3parser.tree.expr.Expression;
-
-import java.util.Collections;
-import java.util.function.Consumer;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 public final class TestWriter {
     public static void testGroupDefinition(String expected, GroupDefinition groupDefinition) {

@@ -1,5 +1,17 @@
 package net.earthcomputer.unpickv3parser;
 
+import java.io.IOException;
+import java.io.LineNumberReader;
+import java.io.Reader;
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
+
+import org.jetbrains.annotations.Nullable;
+
 import net.earthcomputer.unpickv3parser.tree.DataType;
 import net.earthcomputer.unpickv3parser.tree.GroupDefinition;
 import net.earthcomputer.unpickv3parser.tree.GroupFormat;
@@ -15,17 +27,6 @@ import net.earthcomputer.unpickv3parser.tree.expr.FieldExpression;
 import net.earthcomputer.unpickv3parser.tree.expr.LiteralExpression;
 import net.earthcomputer.unpickv3parser.tree.expr.ParenExpression;
 import net.earthcomputer.unpickv3parser.tree.expr.UnaryExpression;
-import org.jetbrains.annotations.Nullable;
-
-import java.io.IOException;
-import java.io.LineNumberReader;
-import java.io.Reader;
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
 
 /**
  * Performs syntax checking and basic semantic checking on .unpick v3 format text, and allows its structure to be

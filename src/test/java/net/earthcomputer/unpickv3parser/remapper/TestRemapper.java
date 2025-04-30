@@ -1,9 +1,6 @@
 package net.earthcomputer.unpickv3parser.remapper;
 
-import net.earthcomputer.unpickv3parser.UnpickV3Reader;
-import net.earthcomputer.unpickv3parser.UnpickV3Remapper;
-import net.earthcomputer.unpickv3parser.UnpickV3Writer;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -13,7 +10,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
+
+import net.earthcomputer.unpickv3parser.UnpickV3Reader;
+import net.earthcomputer.unpickv3parser.UnpickV3Remapper;
+import net.earthcomputer.unpickv3parser.UnpickV3Writer;
 
 public final class TestRemapper {
     private static final Map<String, List<String>> PACKAGES = new HashMap<>();
@@ -64,8 +65,8 @@ public final class TestRemapper {
     @Test
     public void testPackageScope() throws IOException {
         test(
-            "group int\n\t@scope class mapped.foo.X\n\t@scope class mapped.bar.Y\n\t0\n\t1",
-            "group int\n\t@scope package unmapped.foo\n\t0\n\t1"
+                "group int\n\t@scope class mapped.foo.X\n\t@scope class mapped.bar.Y\n\t0\n\t1",
+                "group int\n\t@scope package unmapped.foo\n\t0\n\t1"
         );
     }
 

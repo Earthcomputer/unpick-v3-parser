@@ -1,5 +1,9 @@
 package net.earthcomputer.unpickv3parser;
 
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import net.earthcomputer.unpickv3parser.tree.GroupDefinition;
 import net.earthcomputer.unpickv3parser.tree.GroupScope;
 import net.earthcomputer.unpickv3parser.tree.TargetField;
@@ -8,10 +12,6 @@ import net.earthcomputer.unpickv3parser.tree.UnpickV3Visitor;
 import net.earthcomputer.unpickv3parser.tree.expr.Expression;
 import net.earthcomputer.unpickv3parser.tree.expr.ExpressionTransformer;
 import net.earthcomputer.unpickv3parser.tree.expr.FieldExpression;
-
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Remaps all class, field, and method names in a .unpick v3 file. Visitor methods will be called on the downstream
@@ -32,26 +32,26 @@ public abstract class UnpickV3Remapper extends UnpickV3Visitor {
     @Override
     public void visitGroupDefinition(GroupDefinition groupDefinition) {
         List<GroupScope> scopes = groupDefinition.scopes().stream()
-            .flatMap(scope -> {
-                if (scope instanceof GroupScope.Package packageScope) {
-                    return getClassesInPackage(packageScope.packageName()).stream()
-                        .map((className) -> new GroupScope.Class(mapClassName(className)));
-                } else if (scope instanceof GroupScope.Class classScope) {
-                    return Stream.of(new GroupScope.Class(mapClassName(classScope.className())));
-                } else if (scope instanceof GroupScope.Method methodScope) {
-                    String className = mapClassName(methodScope.className());
-                    String methodName = mapMethodName(methodScope.className(), methodScope.methodName(), methodScope.methodDesc());
-                    String methodDesc = mapDescriptor(methodScope.methodDesc());
-                    return Stream.of(new GroupScope.Method(className, methodName, methodDesc));
-                } else {
-                    throw new AssertionError("Unknown group scope type: " + scope.getClass().getName());
-                }
-            })
-            .collect(Collectors.toList());
+                .flatMap(scope -> {
+                    if (scope instanceof GroupScope.Package packageScope) {
+                        return getClassesInPackage(packageScope.packageName()).stream()
+                            .map((className) -> new GroupScope.Class(mapClassName(className)));
+                    } else if (scope instanceof GroupScope.Class classScope) {
+                        return Stream.of(new GroupScope.Class(mapClassName(classScope.className())));
+                    } else if (scope instanceof GroupScope.Method methodScope) {
+                        String className = mapClassName(methodScope.className());
+                        String methodName = mapMethodName(methodScope.className(), methodScope.methodName(), methodScope.methodDesc());
+                        String methodDesc = mapDescriptor(methodScope.methodDesc());
+                        return Stream.of(new GroupScope.Method(className, methodName, methodDesc));
+                    } else {
+                        throw new AssertionError("Unknown group scope type: " + scope.getClass().getName());
+                    }
+                })
+                .collect(Collectors.toList());
 
         List<Expression> constants = groupDefinition.constants().stream()
-            .map(constant -> constant.transform(new ExpressionRemapper()))
-            .collect(Collectors.toList());
+                .map(constant -> constant.transform(new ExpressionRemapper()))
+                .collect(Collectors.toList());
 
         downstream.visitGroupDefinition(new GroupDefinition(scopes, groupDefinition.flags(), groupDefinition.strict(), groupDefinition.dataType(), groupDefinition.name(), constants, groupDefinition.format()));
     }

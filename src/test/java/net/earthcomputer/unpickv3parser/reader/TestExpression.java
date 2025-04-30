@@ -1,5 +1,17 @@
 package net.earthcomputer.unpickv3parser.reader;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.junit.jupiter.api.Test;
+
 import net.earthcomputer.unpickv3parser.tree.DataType;
 import net.earthcomputer.unpickv3parser.tree.GroupDefinition;
 import net.earthcomputer.unpickv3parser.tree.Literal;
@@ -11,13 +23,6 @@ import net.earthcomputer.unpickv3parser.tree.expr.FieldExpression;
 import net.earthcomputer.unpickv3parser.tree.expr.LiteralExpression;
 import net.earthcomputer.unpickv3parser.tree.expr.ParenExpression;
 import net.earthcomputer.unpickv3parser.tree.expr.UnaryExpression;
-import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 public final class TestExpression {
     @Test

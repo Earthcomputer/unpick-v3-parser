@@ -1,7 +1,8 @@
 package net.earthcomputer.unpickv3parser.tree.expr;
 
-import net.earthcomputer.unpickv3parser.tree.DataType;
 import org.jetbrains.annotations.Nullable;
+
+import net.earthcomputer.unpickv3parser.tree.DataType;
 
 public final class FieldExpression extends Expression {
     public final String className;

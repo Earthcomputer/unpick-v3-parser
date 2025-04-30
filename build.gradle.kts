@@ -1,5 +1,9 @@
+import com.diffplug.spotless.LineEnding
+
 plugins {
     id("java")
+    id("checkstyle")
+    id("com.diffplug.spotless") version "7.0.2"
 }
 
 group = "net.earthcomputer"
@@ -26,4 +30,22 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+checkstyle {
+    toolVersion = "10.21.1"
+    configFile = file("checkstyle.xml")
+    isIgnoreFailures = false
+}
+
+spotless {
+    lineEndings = LineEnding.UNIX
+
+    java {
+        removeUnusedImports()
+        importOrder("java", "javax", "", "net.earthcomputer.unpickv3parser")
+        leadingTabsToSpaces(4)
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
 }

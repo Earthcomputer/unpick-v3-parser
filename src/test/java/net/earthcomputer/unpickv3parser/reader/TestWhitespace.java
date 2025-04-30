@@ -1,12 +1,13 @@
 package net.earthcomputer.unpickv3parser.reader;
 
-import net.earthcomputer.unpickv3parser.tree.TargetField;
-import net.earthcomputer.unpickv3parser.tree.UnpickV3Visitor;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
+
+import net.earthcomputer.unpickv3parser.tree.TargetField;
+import net.earthcomputer.unpickv3parser.tree.UnpickV3Visitor;
 
 public final class TestWhitespace {
     @Test

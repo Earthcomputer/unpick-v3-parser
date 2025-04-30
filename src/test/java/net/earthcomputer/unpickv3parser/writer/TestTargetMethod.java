@@ -1,27 +1,28 @@
 package net.earthcomputer.unpickv3parser.writer;
 
-import net.earthcomputer.unpickv3parser.tree.TargetMethod;
-import org.junit.jupiter.api.Test;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.junit.jupiter.api.Test;
+
+import net.earthcomputer.unpickv3parser.tree.TargetMethod;
+
 public final class TestTargetMethod {
     @Test
     public void testEmptyTargetMethod() {
         TestWriter.testTargetMethod(
-            "target_method foo.Bar baz ()V",
-            new TargetMethod("foo.Bar", "baz", "()V", Collections.emptyMap(), null)
+                "target_method foo.Bar baz ()V",
+                new TargetMethod("foo.Bar", "baz", "()V", Collections.emptyMap(), null)
         );
     }
 
     @Test
     public void testTargetMethodReturn() {
         TestWriter.testTargetMethod(
-            "target_method foo.Bar baz ()V\n\treturn g",
-            new TargetMethod("foo.Bar", "baz", "()V", Collections.emptyMap(), "g")
+                "target_method foo.Bar baz ()V\n\treturn g",
+                new TargetMethod("foo.Bar", "baz", "()V", Collections.emptyMap(), "g")
         );
     }
 
@@ -32,8 +33,8 @@ public final class TestTargetMethod {
         paramGroups.put(69, "h");
         paramGroups.put(0, "g");
         TestWriter.testTargetMethod(
-            "target_method foo.Bar baz ()V\n\tparam 0 g\n\tparam 69 h",
-            new TargetMethod("foo.Bar", "baz", "()V", paramGroups, null)
+                "target_method foo.Bar baz ()V\n\tparam 0 g\n\tparam 69 h",
+                new TargetMethod("foo.Bar", "baz", "()V", paramGroups, null)
         );
     }
 
@@ -43,8 +44,8 @@ public final class TestTargetMethod {
         paramGroups.put(0, "g");
         paramGroups.put(69, "h");
         TestWriter.testTargetMethod(
-            "target_method foo.Bar baz ()V\n\tparam 0 g\n\tparam 69 h\n\treturn i",
-            new TargetMethod("foo.Bar", "baz", "()V", paramGroups, "i")
+                "target_method foo.Bar baz ()V\n\tparam 0 g\n\tparam 69 h\n\treturn i",
+                new TargetMethod("foo.Bar", "baz", "()V", paramGroups, "i")
         );
     }
 }

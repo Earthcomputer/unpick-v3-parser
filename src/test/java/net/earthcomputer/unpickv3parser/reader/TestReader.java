@@ -1,16 +1,17 @@
 package net.earthcomputer.unpickv3parser.reader;
 
-import net.earthcomputer.unpickv3parser.UnpickParseException;
-import net.earthcomputer.unpickv3parser.UnpickV3Reader;
-import net.earthcomputer.unpickv3parser.tree.UnpickV3Visitor;
-import org.opentest4j.AssertionFailedError;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.opentest4j.AssertionFailedError;
+
+import net.earthcomputer.unpickv3parser.UnpickParseException;
+import net.earthcomputer.unpickv3parser.UnpickV3Reader;
+import net.earthcomputer.unpickv3parser.tree.UnpickV3Visitor;
 
 public final class TestReader {
     private TestReader() {

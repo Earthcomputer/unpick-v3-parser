@@ -1,5 +1,10 @@
 package net.earthcomputer.unpickv3parser;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+
 import net.earthcomputer.unpickv3parser.tree.DataType;
 import net.earthcomputer.unpickv3parser.tree.GroupDefinition;
 import net.earthcomputer.unpickv3parser.tree.GroupScope;
@@ -15,11 +20,6 @@ import net.earthcomputer.unpickv3parser.tree.expr.FieldExpression;
 import net.earthcomputer.unpickv3parser.tree.expr.LiteralExpression;
 import net.earthcomputer.unpickv3parser.tree.expr.ParenExpression;
 import net.earthcomputer.unpickv3parser.tree.expr.UnaryExpression;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 
 /**
  * A visitor that generates .unpick v3 format text. Useful for programmatically writing .unpick v3 format files;
@@ -86,11 +86,11 @@ public final class UnpickV3Writer extends UnpickV3Visitor {
             output.append("class ").append(classScope.className());
         } else if (scope instanceof GroupScope.Method methodScope) {
             output.append("method ")
-                .append(methodScope.className())
-                .append(" ")
-                .append(methodScope.methodName())
-                .append(" ")
-                .append(methodScope.methodDesc());
+                    .append(methodScope.className())
+                    .append(" ")
+                    .append(methodScope.methodName())
+                    .append(" ")
+                    .append(methodScope.methodDesc());
         } else {
             throw new AssertionError("Unknown group scope type: " + scope.getClass().getName());
         }
@@ -99,44 +99,44 @@ public final class UnpickV3Writer extends UnpickV3Visitor {
     @Override
     public void visitTargetField(TargetField targetField) {
         output.append(LINE_SEPARATOR)
-            .append("target_field ")
-            .append(targetField.className())
-            .append(" ")
-            .append(targetField.fieldName())
-            .append(" ")
-            .append(targetField.fieldDesc())
-            .append(" ")
-            .append(targetField.groupName())
-            .append(LINE_SEPARATOR);
+                .append("target_field ")
+                .append(targetField.className())
+                .append(" ")
+                .append(targetField.fieldName())
+                .append(" ")
+                .append(targetField.fieldDesc())
+                .append(" ")
+                .append(targetField.groupName())
+                .append(LINE_SEPARATOR);
     }
 
     @Override
     public void visitTargetMethod(TargetMethod targetMethod) {
         output.append(LINE_SEPARATOR)
-            .append("target_method ")
-            .append(targetMethod.className())
-            .append(" ")
-            .append(targetMethod.methodName())
-            .append(" ")
-            .append(targetMethod.methodDesc())
-            .append(LINE_SEPARATOR);
+                .append("target_method ")
+                .append(targetMethod.className())
+                .append(" ")
+                .append(targetMethod.methodName())
+                .append(" ")
+                .append(targetMethod.methodDesc())
+                .append(LINE_SEPARATOR);
 
         List<Map.Entry<Integer, String>> paramGroups = new ArrayList<>(targetMethod.paramGroups().entrySet());
         paramGroups.sort(Map.Entry.comparingByKey());
         for (Map.Entry<Integer, String> paramGroup : paramGroups) {
             output.append(indent)
-                .append("param ")
-                .append(paramGroup.getKey())
-                .append(" ")
-                .append(paramGroup.getValue())
-                .append(LINE_SEPARATOR);
+                    .append("param ")
+                    .append(paramGroup.getKey())
+                    .append(" ")
+                    .append(paramGroup.getValue())
+                    .append(LINE_SEPARATOR);
         }
 
         if (targetMethod.returnGroup() != null) {
             output.append(indent)
-                .append("return ")
-                .append(targetMethod.returnGroup())
-                .append(LINE_SEPARATOR);
+                    .append("return ")
+                    .append(targetMethod.returnGroup())
+                    .append(LINE_SEPARATOR);
         }
     }
 

@@ -1,14 +1,15 @@
 package net.earthcomputer.unpickv3parser.reader;
 
+import java.io.IOException;
+import java.io.StringReader;
+
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 import com.code_intelligence.jazzer.junit.FuzzTest;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
+
 import net.earthcomputer.unpickv3parser.UnpickParseException;
 import net.earthcomputer.unpickv3parser.UnpickV3Reader;
 import net.earthcomputer.unpickv3parser.tree.UnpickV3Visitor;
-import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
-
-import java.io.IOException;
-import java.io.StringReader;
 
 public final class TestFuzz {
     @EnabledIfSystemProperty(named = "unpick.fuzzReader", matches = "true")

@@ -1,5 +1,15 @@
 package net.earthcomputer.unpickv3parser.reader;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import org.junit.jupiter.api.Test;
+
 import net.earthcomputer.unpickv3parser.tree.GroupDefinition;
 import net.earthcomputer.unpickv3parser.tree.Literal;
 import net.earthcomputer.unpickv3parser.tree.TargetField;
@@ -8,14 +18,6 @@ import net.earthcomputer.unpickv3parser.tree.UnpickV3Visitor;
 import net.earthcomputer.unpickv3parser.tree.expr.Expression;
 import net.earthcomputer.unpickv3parser.tree.expr.ExpressionVisitor;
 import net.earthcomputer.unpickv3parser.tree.expr.LiteralExpression;
-import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 public final class TestTokens {
     @Test

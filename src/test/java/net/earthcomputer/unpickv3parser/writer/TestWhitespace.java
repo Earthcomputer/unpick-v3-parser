@@ -1,5 +1,11 @@
 package net.earthcomputer.unpickv3parser.writer;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.util.Collections;
+
+import org.junit.jupiter.api.Test;
+
 import net.earthcomputer.unpickv3parser.UnpickV3Writer;
 import net.earthcomputer.unpickv3parser.tree.DataType;
 import net.earthcomputer.unpickv3parser.tree.GroupDefinition;
@@ -7,16 +13,12 @@ import net.earthcomputer.unpickv3parser.tree.Literal;
 import net.earthcomputer.unpickv3parser.tree.TargetField;
 import net.earthcomputer.unpickv3parser.tree.TargetMethod;
 import net.earthcomputer.unpickv3parser.tree.expr.LiteralExpression;
-import org.junit.jupiter.api.Test;
-
-import java.util.Collections;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 public final class TestWhitespace {
     @Test
     public void testEmptyFile() {
-        TestWriter.test("unpick v3\n", visitor -> {});
+        TestWriter.test("unpick v3\n", visitor -> {
+        });
     }
 
     @Test
