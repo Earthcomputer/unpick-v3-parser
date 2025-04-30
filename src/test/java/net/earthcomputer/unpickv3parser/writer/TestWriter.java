@@ -2,7 +2,6 @@ package net.earthcomputer.unpickv3parser.writer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.util.Collections;
 import java.util.function.Consumer;
 
 import net.earthcomputer.unpickv3parser.UnpickV3Writer;
@@ -27,7 +26,7 @@ public final class TestWriter {
     }
 
     public static void testExpression(String expected, Expression expression) {
-        GroupDefinition groupDefinition = new GroupDefinition(Collections.emptyList(), false, false, DataType.INT, null, Collections.singletonList(expression), null);
+        GroupDefinition groupDefinition = GroupDefinition.Builder.global(DataType.INT).constant(expression).build();
         testGroupDefinition("group int\n\t" + expected, groupDefinition);
     }
 

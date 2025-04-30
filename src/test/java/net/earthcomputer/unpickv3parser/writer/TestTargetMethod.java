@@ -1,10 +1,5 @@
 package net.earthcomputer.unpickv3parser.writer;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 import org.junit.jupiter.api.Test;
 
 import net.earthcomputer.unpickv3parser.tree.TargetMethod;
@@ -14,7 +9,7 @@ public final class TestTargetMethod {
     public void testEmptyTargetMethod() {
         TestWriter.testTargetMethod(
                 "target_method foo.Bar baz ()V",
-                new TargetMethod("foo.Bar", "baz", "()V", Collections.emptyMap(), null)
+                TargetMethod.Builder.builder("foo.Bar", "baz", "()V").build()
         );
     }
 
@@ -22,30 +17,31 @@ public final class TestTargetMethod {
     public void testTargetMethodReturn() {
         TestWriter.testTargetMethod(
                 "target_method foo.Bar baz ()V\n\treturn g",
-                new TargetMethod("foo.Bar", "baz", "()V", Collections.emptyMap(), "g")
+                TargetMethod.Builder.builder("foo.Bar", "baz", "()V").returnGroup("g").build()
         );
     }
 
     @Test
     public void testTargetMethodParameters() {
         // use a linked hash map to make sure that the parameters are sorted in the output
-        Map<Integer, String> paramGroups = new LinkedHashMap<>();
-        paramGroups.put(69, "h");
-        paramGroups.put(0, "g");
         TestWriter.testTargetMethod(
                 "target_method foo.Bar baz ()V\n\tparam 0 g\n\tparam 69 h",
-                new TargetMethod("foo.Bar", "baz", "()V", paramGroups, null)
+                TargetMethod.Builder.builder("foo.Bar", "baz", "()V")
+                        .paramGroup(69, "h")
+                        .paramGroup(0, "g")
+                        .build()
         );
     }
 
     @Test
     public void testTargetMethodParametersAndReturn() {
-        Map<Integer, String> paramGroups = new HashMap<>();
-        paramGroups.put(0, "g");
-        paramGroups.put(69, "h");
         TestWriter.testTargetMethod(
                 "target_method foo.Bar baz ()V\n\tparam 0 g\n\tparam 69 h\n\treturn i",
-                new TargetMethod("foo.Bar", "baz", "()V", paramGroups, "i")
+                TargetMethod.Builder.builder("foo.Bar", "baz", "()V")
+                        .paramGroup(0, "g")
+                        .paramGroup(69, "h")
+                        .returnGroup("i")
+                        .build()
         );
     }
 }

@@ -53,7 +53,7 @@ public abstract class UnpickV3Remapper extends UnpickV3Visitor {
                 .map(constant -> constant.transform(new ExpressionRemapper()))
                 .collect(Collectors.toList());
 
-        downstream.visitGroupDefinition(new GroupDefinition(scopes, groupDefinition.flags(), groupDefinition.strict(), groupDefinition.dataType(), groupDefinition.name(), constants, groupDefinition.format()));
+        downstream.visitGroupDefinition(GroupDefinition.Builder.from(groupDefinition).setScopes(scopes).setConstants(constants).build());
     }
 
     @Override
