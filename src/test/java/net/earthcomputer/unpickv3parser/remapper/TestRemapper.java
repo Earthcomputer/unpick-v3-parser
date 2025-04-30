@@ -12,7 +12,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -118,31 +117,7 @@ public final class TestRemapper {
         }
         assertEquals(expectedRemapped, remapped);
     }
-    
-    private static final class MemberKey {
-        private final String owner;
-        private final String name;
-        private final String descriptor;
 
-        private MemberKey(String owner, String name, String descriptor) {
-            this.owner = owner;
-            this.name = name;
-            this.descriptor = descriptor;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(owner, name, descriptor);
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            MemberKey memberKey = (MemberKey) o;
-            return Objects.equals(owner, memberKey.owner)
-                && Objects.equals(name, memberKey.name)
-                && Objects.equals(descriptor, memberKey.descriptor);
-        }
+    private record MemberKey(String owner, String name, String descriptor) {
     }
 }

@@ -24,8 +24,8 @@ public final class TestTokens {
         TestReader.test("tokens/identifier", new UnpickV3Visitor() {
             @Override
             public void visitGroupDefinition(GroupDefinition groupDefinition) {
-                assertNotNull(groupDefinition.name);
-                groupNames.add(groupDefinition.name);
+                assertNotNull(groupDefinition.name());
+                groupNames.add(groupDefinition.name());
             }
         });
         assertEquals(Arrays.asList("a", "A", "_", "$", "az0_$G"), groupNames);
@@ -37,11 +37,11 @@ public final class TestTokens {
         TestReader.test("tokens/double", new UnpickV3Visitor() {
             @Override
             public void visitGroupDefinition(GroupDefinition groupDefinition) {
-                for (Expression constant : groupDefinition.constants) {
+                for (Expression constant : groupDefinition.constants()) {
                     constant.accept(new ExpressionVisitor() {
                         @Override
                         public void visitLiteralExpression(LiteralExpression literalExpression) {
-                            exprDoubles.add(((Literal.Double) literalExpression.literal).value);
+                            exprDoubles.add(((Literal.Double) literalExpression.literal).value());
                         }
                     });
                 }
@@ -56,11 +56,11 @@ public final class TestTokens {
         TestReader.test("tokens/float", new UnpickV3Visitor() {
             @Override
             public void visitGroupDefinition(GroupDefinition groupDefinition) {
-                for (Expression constant : groupDefinition.constants) {
+                for (Expression constant : groupDefinition.constants()) {
                     constant.accept(new ExpressionVisitor() {
                         @Override
                         public void visitLiteralExpression(LiteralExpression literalExpression) {
-                            exprFloats.add(((Literal.Float) literalExpression.literal).value);
+                            exprFloats.add(((Literal.Float) literalExpression.literal).value());
                         }
                     });
                 }
@@ -76,13 +76,13 @@ public final class TestTokens {
         TestReader.test("tokens/integer", new UnpickV3Visitor() {
             @Override
             public void visitGroupDefinition(GroupDefinition groupDefinition) {
-                for (Expression constant : groupDefinition.constants) {
+                for (Expression constant : groupDefinition.constants()) {
                     constant.accept(new ExpressionVisitor() {
                         @Override
                         public void visitLiteralExpression(LiteralExpression literalExpression) {
                             Literal.Integer literal = (Literal.Integer) literalExpression.literal;
-                            exprInts.add(literal.value);
-                            exprRadixes.add(literal.radix);
+                            exprInts.add(literal.value());
+                            exprRadixes.add(literal.radix());
                         }
                     });
                 }
@@ -99,13 +99,13 @@ public final class TestTokens {
         TestReader.test("tokens/long", new UnpickV3Visitor() {
             @Override
             public void visitGroupDefinition(GroupDefinition groupDefinition) {
-                for (Expression constant : groupDefinition.constants) {
+                for (Expression constant : groupDefinition.constants()) {
                     constant.accept(new ExpressionVisitor() {
                         @Override
                         public void visitLiteralExpression(LiteralExpression literalExpression) {
                             Literal.Long literal = (Literal.Long) literalExpression.literal;
-                            exprLongs.add(literal.value);
-                            exprRadixes.add(literal.radix);
+                            exprLongs.add(literal.value());
+                            exprRadixes.add(literal.radix());
                         }
                     });
                 }
@@ -121,11 +121,11 @@ public final class TestTokens {
         TestReader.test("tokens/char", new UnpickV3Visitor() {
             @Override
             public void visitGroupDefinition(GroupDefinition groupDefinition) {
-                for (Expression constant : groupDefinition.constants) {
+                for (Expression constant : groupDefinition.constants()) {
                     constant.accept(new ExpressionVisitor() {
                         @Override
                         public void visitLiteralExpression(LiteralExpression literalExpression) {
-                            exprChars.add(((Literal.Character) literalExpression.literal).value);
+                            exprChars.add(((Literal.Character) literalExpression.literal).value());
                         }
                     });
                 }
@@ -141,11 +141,11 @@ public final class TestTokens {
         TestReader.test("tokens/string", new UnpickV3Visitor() {
             @Override
             public void visitGroupDefinition(GroupDefinition groupDefinition) {
-                for (Expression constant : groupDefinition.constants) {
+                for (Expression constant : groupDefinition.constants()) {
                     constant.accept(new ExpressionVisitor() {
                         @Override
                         public void visitLiteralExpression(LiteralExpression literalExpression) {
-                            exprStrings.add(((Literal.String) literalExpression.literal).value);
+                            exprStrings.add(((Literal.String) literalExpression.literal).value());
                         }
                     });
                 }
@@ -160,7 +160,7 @@ public final class TestTokens {
         TestReader.test("tokens/field_descriptor", new UnpickV3Visitor() {
             @Override
             public void visitTargetField(TargetField targetField) {
-                fieldDescriptors.add(targetField.fieldDesc);
+                fieldDescriptors.add(targetField.fieldDesc());
             }
         });
         assertEquals(Arrays.asList("B", "C", "D", "F", "I", "J", "S", "Z", "Ljava/lang/String;", "[I", "[[Ljava/lang/String;"), fieldDescriptors);
@@ -172,7 +172,7 @@ public final class TestTokens {
         TestReader.test("tokens/method_descriptor", new UnpickV3Visitor() {
             @Override
             public void visitTargetMethod(TargetMethod targetMethod) {
-                methodDescriptors.add(targetMethod.methodDesc);
+                methodDescriptors.add(targetMethod.methodDesc());
             }
         });
         assertEquals(Arrays.asList("()V", "([[[Ljava/lang/Object;IIIDDZZLjava/lang/Object;[[[[[I)Ljava/lang/Thread;"), methodDescriptors);

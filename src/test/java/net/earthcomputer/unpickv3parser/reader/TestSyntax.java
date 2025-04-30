@@ -34,7 +34,7 @@ public final class TestSyntax {
         TestReader.test("syntax/class_name", new UnpickV3Visitor() {
             @Override
             public void visitTargetField(TargetField targetField) {
-                classNames.add(targetField.className);
+                classNames.add(targetField.className());
             }
         });
         assertEquals(Arrays.asList("Foo", "foo.Bar", "foo.Bar$Baz", "foo.Bar$1"), classNames);
@@ -46,7 +46,7 @@ public final class TestSyntax {
         TestReader.test("syntax/data_type", new UnpickV3Visitor() {
             @Override
             public void visitGroupDefinition(GroupDefinition groupDefinition) {
-                for (Expression constant : groupDefinition.constants) {
+                for (Expression constant : groupDefinition.constants()) {
                     constant.accept(new ExpressionVisitor() {
                         @Override
                         public void visitCastExpression(CastExpression castExpression) {
@@ -65,7 +65,7 @@ public final class TestSyntax {
         TestReader.test("syntax/method_name", new UnpickV3Visitor() {
             @Override
             public void visitTargetMethod(TargetMethod targetMethod) {
-                methodNames.add(targetMethod.methodName);
+                methodNames.add(targetMethod.methodName());
             }
         });
         assertEquals(Arrays.asList("baz", "<init>", "<clinit>"), methodNames);
@@ -78,8 +78,8 @@ public final class TestSyntax {
         TestReader.test("syntax/target_method", new UnpickV3Visitor() {
             @Override
             public void visitTargetMethod(TargetMethod targetMethod) {
-                paramGroups.add(targetMethod.paramGroups);
-                returnGroups.add(targetMethod.returnGroup);
+                paramGroups.add(targetMethod.paramGroups());
+                returnGroups.add(targetMethod.returnGroup());
             }
         });
         Map<Integer, String> expectedParamGroups1 = new HashMap<>();
@@ -106,22 +106,21 @@ public final class TestSyntax {
         TestReader.test("syntax/group_definition", new UnpickV3Visitor() {
             @Override
             public void visitGroupDefinition(GroupDefinition groupDefinition) {
-                groupNames.add(groupDefinition.name);
-                groupFlags.add(groupDefinition.flags);
-                groupDataTypes.add(groupDefinition.dataType);
-                groupStrict.add(groupDefinition.strict);
-                groupFormats.add(groupDefinition.format);
+                groupNames.add(groupDefinition.name());
+                groupFlags.add(groupDefinition.flags());
+                groupDataTypes.add(groupDefinition.dataType());
+                groupStrict.add(groupDefinition.strict());
+                groupFormats.add(groupDefinition.format());
                 List<String> packageScopes = new ArrayList<>();
                 List<String> classScopes = new ArrayList<>();
                 List<String> methodScopes = new ArrayList<>();
-                for (GroupScope scope : groupDefinition.scopes) {
-                    if (scope instanceof GroupScope.Package) {
-                        packageScopes.add(((GroupScope.Package) scope).packageName);
-                    } else if (scope instanceof GroupScope.Class) {
-                        classScopes.add(((GroupScope.Class) scope).className);
-                    } else if (scope instanceof GroupScope.Method) {
-                        GroupScope.Method methodScope = (GroupScope.Method) scope;
-                        methodScopes.add(methodScope.className + "." + methodScope.methodName + methodScope.methodDesc);
+                for (GroupScope scope : groupDefinition.scopes()) {
+                    if (scope instanceof GroupScope.Package packageScope) {
+                        packageScopes.add(packageScope.packageName());
+                    } else if (scope instanceof GroupScope.Class classScope) {
+                        classScopes.add(classScope.className());
+                    } else if (scope instanceof GroupScope.Method methodScope) {
+                        methodScopes.add(methodScope.className() + "." + methodScope.methodName() + methodScope.methodDesc());
                     } else {
                         throw new AssertionError("Unknown scope type: " + scope.getClass().getName());
                     }
@@ -129,22 +128,22 @@ public final class TestSyntax {
                 groupPackageScopes.add(packageScopes);
                 groupClassScopes.add(classScopes);
                 groupMethodScopes.add(methodScopes);
-                groupConstants.add(groupDefinition.constants.stream().flatMap(constant -> {
+                groupConstants.add(groupDefinition.constants().stream().flatMap(constant -> {
                     List<Object> constants = new ArrayList<>();
                     constant.accept(new ExpressionVisitor() {
                         @Override
                         public void visitLiteralExpression(LiteralExpression literalExpression) {
                             Literal constant = literalExpression.literal;
-                            if (constant instanceof Literal.Integer) {
-                                constants.add(((Literal.Integer) constant).value);
-                            } else if (constant instanceof Literal.Long) {
-                                constants.add(((Literal.Long) constant).value);
-                            } else if (constant instanceof Literal.Float) {
-                                constants.add(((Literal.Float) constant).value);
-                            } else if (constant instanceof Literal.Double) {
-                                constants.add(((Literal.Double) constant).value);
-                            } else if (constant instanceof Literal.String) {
-                                constants.add(((Literal.String) constant).value);
+                            if (constant instanceof Literal.Integer integerLiteral) {
+                                constants.add(integerLiteral.value());
+                            } else if (constant instanceof Literal.Long longLiteral) {
+                                constants.add(longLiteral.value());
+                            } else if (constant instanceof Literal.Float floatLiteral) {
+                                constants.add(floatLiteral.value());
+                            } else if (constant instanceof Literal.Double doubleLiteral) {
+                                constants.add(doubleLiteral.value());
+                            } else if (constant instanceof Literal.String stringLiteral) {
+                                constants.add(stringLiteral.value());
                             } else {
                                 throw new AssertionError("Unexpected constant key type: " + constant.getClass().getName());
                             }

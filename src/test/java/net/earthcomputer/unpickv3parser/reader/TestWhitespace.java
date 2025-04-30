@@ -49,10 +49,10 @@ public final class TestWhitespace {
         TestReader.test(file, new UnpickV3Visitor() {
             @Override
             public void visitTargetField(TargetField targetField) {
-                assertEquals("foo.Bar", targetField.className);
-                assertEquals("baz", targetField.fieldName);
-                assertEquals("I", targetField.fieldDesc);
-                assertEquals("g", targetField.groupName);
+                assertEquals("foo.Bar", targetField.className());
+                assertEquals("baz", targetField.fieldName());
+                assertEquals("I", targetField.fieldDesc());
+                assertEquals("g", targetField.groupName());
                 targetFieldCount[0]++;
             }
         });

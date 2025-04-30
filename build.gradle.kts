@@ -5,6 +5,14 @@ plugins {
 group = "net.earthcomputer"
 version = "1.0-SNAPSHOT"
 
+tasks.withType<JavaCompile> {
+    options.release.set(17)
+}
+
+tasks.withType<Javadoc> {
+    options.source = "17"
+}
+
 repositories {
     mavenCentral()
 }

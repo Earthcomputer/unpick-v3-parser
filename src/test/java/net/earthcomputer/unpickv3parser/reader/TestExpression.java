@@ -26,7 +26,7 @@ public final class TestExpression {
         TestReader.test("expression/expression", new UnpickV3Visitor() {
             @Override
             public void visitGroupDefinition(GroupDefinition groupDefinition) {
-                expressions.addAll(groupDefinition.constants);
+                expressions.addAll(groupDefinition.constants());
             }
         });
         assertEquals(20, expressions.size());
@@ -216,7 +216,7 @@ public final class TestExpression {
     private static void assertLiteral(int value, Expression expr) {
         LiteralExpression literalExpr = assertInstanceOf(LiteralExpression.class, expr);
         Literal.Integer literal = assertInstanceOf(Literal.Integer.class, literalExpr.literal);
-        assertEquals(value, literal.value);
+        assertEquals(value, literal.value());
     }
 
     private static UnaryExpression assertUnary(UnaryExpression.Operator operator, Expression expr) {

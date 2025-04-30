@@ -31,18 +31,17 @@ public abstract class UnpickV3Remapper extends UnpickV3Visitor {
 
     @Override
     public void visitGroupDefinition(GroupDefinition groupDefinition) {
-        List<GroupScope> scopes = groupDefinition.scopes.stream()
+        List<GroupScope> scopes = groupDefinition.scopes().stream()
             .flatMap(scope -> {
-                if (scope instanceof GroupScope.Package) {
-                    return getClassesInPackage(((GroupScope.Package) scope).packageName).stream()
+                if (scope instanceof GroupScope.Package packageScope) {
+                    return getClassesInPackage(packageScope.packageName()).stream()
                         .map((className) -> new GroupScope.Class(mapClassName(className)));
-                } else if (scope instanceof GroupScope.Class) {
-                    return Stream.of(new GroupScope.Class(mapClassName(((GroupScope.Class) scope).className)));
-                } else if (scope instanceof GroupScope.Method) {
-                    GroupScope.Method methodScope = (GroupScope.Method) scope;
-                    String className = mapClassName(methodScope.className);
-                    String methodName = mapMethodName(methodScope.className, methodScope.methodName, methodScope.methodDesc);
-                    String methodDesc = mapDescriptor(methodScope.methodDesc);
+                } else if (scope instanceof GroupScope.Class classScope) {
+                    return Stream.of(new GroupScope.Class(mapClassName(classScope.className())));
+                } else if (scope instanceof GroupScope.Method methodScope) {
+                    String className = mapClassName(methodScope.className());
+                    String methodName = mapMethodName(methodScope.className(), methodScope.methodName(), methodScope.methodDesc());
+                    String methodDesc = mapDescriptor(methodScope.methodDesc());
                     return Stream.of(new GroupScope.Method(className, methodName, methodDesc));
                 } else {
                     throw new AssertionError("Unknown group scope type: " + scope.getClass().getName());
@@ -50,27 +49,27 @@ public abstract class UnpickV3Remapper extends UnpickV3Visitor {
             })
             .collect(Collectors.toList());
 
-        List<Expression> constants = groupDefinition.constants.stream()
+        List<Expression> constants = groupDefinition.constants().stream()
             .map(constant -> constant.transform(new ExpressionRemapper()))
             .collect(Collectors.toList());
 
-        downstream.visitGroupDefinition(new GroupDefinition(scopes, groupDefinition.flags, groupDefinition.strict, groupDefinition.dataType, groupDefinition.name, constants, groupDefinition.format));
+        downstream.visitGroupDefinition(new GroupDefinition(scopes, groupDefinition.flags(), groupDefinition.strict(), groupDefinition.dataType(), groupDefinition.name(), constants, groupDefinition.format()));
     }
 
     @Override
     public void visitTargetField(TargetField targetField) {
-        String className = mapClassName(targetField.className);
-        String fieldName = mapFieldName(targetField.className, targetField.fieldName, targetField.fieldDesc);
-        String fieldDesc = mapDescriptor(targetField.fieldDesc);
-        downstream.visitTargetField(new TargetField(className, fieldName, fieldDesc, targetField.groupName));
+        String className = mapClassName(targetField.className());
+        String fieldName = mapFieldName(targetField.className(), targetField.fieldName(), targetField.fieldDesc());
+        String fieldDesc = mapDescriptor(targetField.fieldDesc());
+        downstream.visitTargetField(new TargetField(className, fieldName, fieldDesc, targetField.groupName()));
     }
 
     @Override
     public void visitTargetMethod(TargetMethod targetMethod) {
-        String className = mapClassName(targetMethod.className);
-        String methodName = mapMethodName(targetMethod.className, targetMethod.methodName, targetMethod.methodDesc);
-        String methodDesc = mapDescriptor(targetMethod.methodDesc);
-        downstream.visitTargetMethod(new TargetMethod(className, methodName, methodDesc, targetMethod.paramGroups, targetMethod.returnGroup));
+        String className = mapClassName(targetMethod.className());
+        String methodName = mapMethodName(targetMethod.className(), targetMethod.methodName(), targetMethod.methodDesc());
+        String methodDesc = mapDescriptor(targetMethod.methodDesc());
+        downstream.visitTargetMethod(new TargetMethod(className, methodName, methodDesc, targetMethod.paramGroups(), targetMethod.returnGroup()));
     }
 
     protected abstract String mapClassName(String className);
@@ -114,37 +113,17 @@ public abstract class UnpickV3Remapper extends UnpickV3Visitor {
             if (fieldExpression.fieldType == null) {
                 fieldDesc = getFieldDesc(fieldExpression.className, fieldExpression.fieldName);
             } else {
-                switch (fieldExpression.fieldType) {
-                    case BYTE:
-                        fieldDesc = "B";
-                        break;
-                    case SHORT:
-                        fieldDesc = "S";
-                        break;
-                    case INT:
-                        fieldDesc = "I";
-                        break;
-                    case LONG:
-                        fieldDesc = "J";
-                        break;
-                    case FLOAT:
-                        fieldDesc = "F";
-                        break;
-                    case DOUBLE:
-                        fieldDesc = "D";
-                        break;
-                    case CHAR:
-                        fieldDesc = "C";
-                        break;
-                    case STRING:
-                        fieldDesc = "Ljava/lang/String;";
-                        break;
-                    case CLASS:
-                        fieldDesc = "Ljava/lang/Class;";
-                        break;
-                    default:
-                        throw new AssertionError("Unknown data type: " + fieldExpression.fieldType);
-                }
+                fieldDesc = switch (fieldExpression.fieldType) {
+                    case BYTE -> "B";
+                    case SHORT -> "S";
+                    case INT -> "I";
+                    case LONG -> "J";
+                    case FLOAT -> "F";
+                    case DOUBLE -> "D";
+                    case CHAR -> "C";
+                    case STRING -> "Ljava/lang/String;";
+                    case CLASS -> "Ljava/lang/Class;";
+                };
             }
 
             String fieldName = mapFieldName(fieldExpression.className, fieldExpression.fieldName, fieldDesc);

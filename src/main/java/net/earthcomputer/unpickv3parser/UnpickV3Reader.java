@@ -87,35 +87,26 @@ public final class UnpickV3Reader implements AutoCloseable {
         }
 
         switch (token) {
-            case "target_field":
-                visitor.visitTargetField(parseTargetField());
-                break;
-            case "target_method":
-                visitor.visitTargetMethod(parseTargetMethod());
-                break;
-            case "group":
-                visitor.visitGroupDefinition(parseGroupDefinition());
-                break;
-            default:
-                throw expectedTokenError("unpick item", token);
+            case "target_field" -> visitor.visitTargetField(parseTargetField());
+            case "target_method" -> visitor.visitTargetMethod(parseTargetMethod());
+            case "group" -> visitor.visitGroupDefinition(parseGroupDefinition());
+            default -> throw expectedTokenError("unpick item", token);
         }
     }
 
     private GroupScope parseGroupScope() throws IOException {
         String token = nextToken("group scope type", TokenType.IDENTIFIER);
-        switch (token) {
-            case "package":
-                return new GroupScope.Package(parseClassName("package name"));
-            case "class":
-                return new GroupScope.Class(parseClassName());
-            case "method":
+        return switch (token) {
+            case "package" -> new GroupScope.Package(parseClassName("package name"));
+            case "class" -> new GroupScope.Class(parseClassName());
+            case "method" -> {
                 String className = parseClassName();
                 String methodName = parseMethodName();
                 String methodDesc = nextToken(TokenType.METHOD_DESCRIPTOR);
-                return new GroupScope.Method(className, methodName, methodDesc);
-            default:
-                throw expectedTokenError("group scope type", token);
-        }
+                yield new GroupScope.Method(className, methodName, methodDesc);
+            }
+            default -> throw expectedTokenError("group scope type", token);
+        };
     }
 
     private GroupDefinition parseGroupDefinition() throws IOException {
@@ -155,10 +146,8 @@ public final class UnpickV3Reader implements AutoCloseable {
                 }
                 token = nextToken("attribute name", TokenType.IDENTIFIER);
                 switch (token) {
-                    case "scope":
-                        scopes.add(parseGroupScope());
-                        break;
-                    case "flags":
+                    case "scope" -> scopes.add(parseGroupScope());
+                    case "flags" -> {
                         if (flags) {
                             throw parseError("Duplicate flags attribute");
                         }
@@ -169,14 +158,14 @@ public final class UnpickV3Reader implements AutoCloseable {
                             throw parseError("The flags attribute is not applicable to the default group");
                         }
                         flags = true;
-                        break;
-                    case "strict":
+                    }
+                    case "strict" -> {
                         if (strict) {
                             throw parseError("Duplicate strict attribute");
                         }
                         strict = true;
-                        break;
-                    case "format":
+                    }
+                    case "format" -> {
                         if (format != null) {
                             throw parseError("Duplicate format attribute");
                         }
@@ -187,9 +176,8 @@ public final class UnpickV3Reader implements AutoCloseable {
                         if (format != GroupFormat.DECIMAL && format != GroupFormat.HEX && dataType != DataType.INT && dataType != DataType.LONG) {
                             throw parseError("This format is not applicable to floating point data types");
                         }
-                        break;
-                    default:
-                        throw expectedTokenError("attribute name", token);
+                    }
+                    default -> throw expectedTokenError("attribute name", token);
                 }
             } else {
                 finishedAttributes = true;
@@ -206,20 +194,14 @@ public final class UnpickV3Reader implements AutoCloseable {
 
     private GroupFormat parseGroupFormat() throws IOException {
         String token = nextToken("group format", TokenType.IDENTIFIER);
-        switch (token) {
-            case "decimal":
-                return GroupFormat.DECIMAL;
-            case "hex":
-                return GroupFormat.HEX;
-            case "binary":
-                return GroupFormat.BINARY;
-            case "octal":
-                return GroupFormat.OCTAL;
-            case "char":
-                return GroupFormat.CHAR;
-            default:
-                throw expectedTokenError("group format", token);
-        }
+        return switch (token) {
+            case "decimal" -> GroupFormat.DECIMAL;
+            case "hex" -> GroupFormat.HEX;
+            case "binary" -> GroupFormat.BINARY;
+            case "octal" -> GroupFormat.OCTAL;
+            case "char" -> GroupFormat.CHAR;
+            default -> throw expectedTokenError("group format", token);
+        };
     }
 
     private Expression parseExpression(int parseDepth) throws IOException {
@@ -229,45 +211,23 @@ public final class UnpickV3Reader implements AutoCloseable {
 
         operandStack.push(parseUnaryExpression(parseDepth, false));
 
-        parseLoop:
         while (true) {
-            BinaryExpression.Operator operator;
-            switch (peekToken()) {
-                case "|":
-                    operator = BinaryExpression.Operator.BIT_OR;
-                    break;
-                case "^":
-                    operator = BinaryExpression.Operator.BIT_XOR;
-                    break;
-                case "&":
-                    operator = BinaryExpression.Operator.BIT_AND;
-                    break;
-                case "<<":
-                    operator = BinaryExpression.Operator.BIT_SHIFT_LEFT;
-                    break;
-                case ">>":
-                    operator = BinaryExpression.Operator.BIT_SHIFT_RIGHT;
-                    break;
-                case ">>>":
-                    operator = BinaryExpression.Operator.BIT_SHIFT_RIGHT_UNSIGNED;
-                    break;
-                case "+":
-                    operator = BinaryExpression.Operator.ADD;
-                    break;
-                case "-":
-                    operator = BinaryExpression.Operator.SUBTRACT;
-                    break;
-                case "*":
-                    operator = BinaryExpression.Operator.MULTIPLY;
-                    break;
-                case "/":
-                    operator = BinaryExpression.Operator.DIVIDE;
-                    break;
-                case "%":
-                    operator = BinaryExpression.Operator.MODULO;
-                    break;
-                default:
-                    break parseLoop;
+            BinaryExpression.Operator operator = switch (peekToken()) {
+                case "|" -> BinaryExpression.Operator.BIT_OR;
+                case "^" -> BinaryExpression.Operator.BIT_XOR;
+                case "&" -> BinaryExpression.Operator.BIT_AND;
+                case "<<" -> BinaryExpression.Operator.BIT_SHIFT_LEFT;
+                case ">>" -> BinaryExpression.Operator.BIT_SHIFT_RIGHT;
+                case ">>>" -> BinaryExpression.Operator.BIT_SHIFT_RIGHT_UNSIGNED;
+                case "+" -> BinaryExpression.Operator.ADD;
+                case "-" -> BinaryExpression.Operator.SUBTRACT;
+                case "*" -> BinaryExpression.Operator.MULTIPLY;
+                case "/" -> BinaryExpression.Operator.DIVIDE;
+                case "%" -> BinaryExpression.Operator.MODULO;
+                default -> null;
+            };
+            if (operator == null) {
+                break;
             }
             nextToken(); // consume the operator
 
@@ -298,11 +258,13 @@ public final class UnpickV3Reader implements AutoCloseable {
 
         String token = nextToken();
         switch (token) {
-            case "-":
+            case "-" -> {
                 return new UnaryExpression(parseUnaryExpression(parseDepth + 1, true), UnaryExpression.Operator.NEGATE);
-            case "~":
+            }
+            case "~" -> {
                 return new UnaryExpression(parseUnaryExpression(parseDepth + 1, false), UnaryExpression.Operator.BIT_NOT);
-            case "(":
+            }
+            case "(" -> {
                 boolean parseAsCast = peekTokenType() == TokenType.IDENTIFIER && ")".equals(peekToken2());
                 if (parseAsCast) {
                     DataType castType = parseDataType();
@@ -313,30 +275,31 @@ public final class UnpickV3Reader implements AutoCloseable {
                     expectToken(")");
                     return new ParenExpression(expression);
                 }
+            }
         }
 
-        switch (lastTokenType) {
-            case IDENTIFIER:
-                return parseFieldExpression(token);
-            case INTEGER:
+        return switch (lastTokenType) {
+            case IDENTIFIER -> parseFieldExpression(token);
+            case INTEGER -> {
                 ParsedInteger parsedInt = parseInt(token, negative);
-                return new LiteralExpression(new Literal.Integer(negative ? -parsedInt.value : parsedInt.value, parsedInt.radix));
-            case LONG:
+                yield new LiteralExpression(new Literal.Integer(negative ? -parsedInt.value : parsedInt.value, parsedInt.radix));
+            }
+            case LONG -> {
                 ParsedLong parsedLong = parseLong(token, negative);
-                return new LiteralExpression(new Literal.Long(negative ? -parsedLong.value : parsedLong.value, parsedLong.radix));
-            case FLOAT:
+                yield new LiteralExpression(new Literal.Long(negative ? -parsedLong.value : parsedLong.value, parsedLong.radix));
+            }
+            case FLOAT -> {
                 float parsedFloat = parseFloat(token, negative);
-                return new LiteralExpression(new Literal.Float(negative ? -parsedFloat : parsedFloat));
-            case DOUBLE:
+                yield new LiteralExpression(new Literal.Float(negative ? -parsedFloat : parsedFloat));
+            }
+            case DOUBLE -> {
                 double parsedDouble = parseDouble(token, negative);
-                return new LiteralExpression(new Literal.Double(negative ? -parsedDouble : parsedDouble));
-            case CHAR:
-                return new LiteralExpression(new Literal.Character(unquoteChar(token)));
-            case STRING:
-                return new LiteralExpression(new Literal.String(unquoteString(token)));
-            default:
-                throw expectedTokenError("expression", token);
-        }
+                yield new LiteralExpression(new Literal.Double(negative ? -parsedDouble : parsedDouble));
+            }
+            case CHAR -> new LiteralExpression(new Literal.Character(unquoteChar(token)));
+            case STRING -> new LiteralExpression(new Literal.String(unquoteString(token)));
+            default -> throw expectedTokenError("expression", token);
+        };
     }
 
     private FieldExpression parseFieldExpression(String token) throws IOException {
@@ -420,21 +383,20 @@ public final class UnpickV3Reader implements AutoCloseable {
 
             token = nextToken("target method item", TokenType.IDENTIFIER);
             switch (token) {
-                case "param":
+                case "param" -> {
                     int paramIndex = parseInt(nextToken(TokenType.INTEGER), false).value;
                     if (paramGroups.containsKey(paramIndex)) {
                         throw parseError("Specified parameter " + paramIndex + " twice");
                     }
                     paramGroups.put(paramIndex, nextToken(TokenType.IDENTIFIER));
-                    break;
-                case "return":
+                }
+                case "return" -> {
                     if (returnGroup != null) {
                         throw parseError("Specified return group twice");
                     }
                     returnGroup = nextToken(TokenType.IDENTIFIER);
-                    break;
-                default:
-                    throw expectedTokenError("target method item", token);
+                }
+                default -> throw expectedTokenError("target method item", token);
             }
         }
 
@@ -443,28 +405,18 @@ public final class UnpickV3Reader implements AutoCloseable {
 
     private DataType parseDataType() throws IOException {
         String token = nextToken("data type", TokenType.IDENTIFIER);
-        switch (token) {
-            case "byte":
-                return DataType.BYTE;
-            case "short":
-                return DataType.SHORT;
-            case "int":
-                return DataType.INT;
-            case "long":
-                return DataType.LONG;
-            case "float":
-                return DataType.FLOAT;
-            case "double":
-                return DataType.DOUBLE;
-            case "char":
-                return DataType.CHAR;
-            case "String":
-                return DataType.STRING;
-            case "Class":
-                return DataType.CLASS;
-            default:
-                throw expectedTokenError("data type", token);
-        }
+        return switch (token) {
+            case "byte" -> DataType.BYTE;
+            case "short" -> DataType.SHORT;
+            case "int" -> DataType.INT;
+            case "long" -> DataType.LONG;
+            case "float" -> DataType.FLOAT;
+            case "double" -> DataType.DOUBLE;
+            case "char" -> DataType.CHAR;
+            case "String" -> DataType.STRING;
+            case "Class" -> DataType.CLASS;
+            default -> throw expectedTokenError("data type", token);
+        };
     }
 
     private String parseClassName() throws IOException {
@@ -619,38 +571,22 @@ public final class UnpickV3Reader implements AutoCloseable {
             if (string.charAt(i) == '\\') {
                 i++;
                 switch (string.charAt(i)) {
-                    case 'u':
+                    case 'u' -> {
                         do {
                             i++;
                         } while (string.charAt(i) == 'u');
                         result.append((char) Integer.parseInt(string.substring(i, i + 4), 16));
                         i += 3;
-                        break;
-                    case 'b':
-                        result.append('\b');
-                        break;
-                    case 't':
-                        result.append('\t');
-                        break;
-                    case 'n':
-                        result.append('\n');
-                        break;
-                    case 'f':
-                        result.append('\f');
-                        break;
-                    case 'r':
-                        result.append('\r');
-                        break;
-                    case '"':
-                        result.append('"');
-                        break;
-                    case '\'':
-                        result.append('\'');
-                        break;
-                    case '\\':
-                        result.append('\\');
-                        break;
-                    case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7':
+                    }
+                    case 'b' -> result.append('\b');
+                    case 't' -> result.append('\t');
+                    case 'n' -> result.append('\n');
+                    case 'f' -> result.append('\f');
+                    case 'r' -> result.append('\r');
+                    case '"' -> result.append('"');
+                    case '\'' -> result.append('\'');
+                    case '\\' -> result.append('\\');
+                    case '0', '1', '2', '3', '4', '5', '6', '7' -> {
                         char c;
                         int count = 0;
                         int maxCount = string.charAt(i) <= '3' ? 3 : 2;
@@ -659,9 +595,8 @@ public final class UnpickV3Reader implements AutoCloseable {
                         }
                         result.append((char) Integer.parseInt(string.substring(i, i + count), 8));
                         i += count - 1;
-                        break;
-                    default:
-                        throw new AssertionError("Unexpected escape sequence in string");
+                    }
+                    default -> throw new AssertionError("Unexpected escape sequence in string");
                 }
             } else {
                 result.append(string.charAt(i));
@@ -849,11 +784,10 @@ public final class UnpickV3Reader implements AutoCloseable {
         }
         switch (line.charAt(column)) {
             // primitive types
-            case 'B': case 'C': case 'D': case 'F': case 'I': case 'J': case 'S': case 'Z':
-                column++;
-                break;
+            case 'B', 'C', 'D', 'F', 'I', 'J', 'S', 'Z' -> column++;
+
             // class types
-            case 'L':
+            case 'L' -> {
                 column++;
 
                 // class name
@@ -870,12 +804,13 @@ public final class UnpickV3Reader implements AutoCloseable {
                     throw parseErrorInToken("Unexpected end of descriptor");
                 }
                 column++;
-                break;
-            default:
+            }
+            default -> {
                 if (!startOfToken) {
                     throw parseErrorInToken("Illegal character in descriptor: " + line.charAt(column));
                 }
                 return false;
+            }
         }
 
         lastTokenType = TokenType.TYPE_DESCRIPTOR;
@@ -1052,7 +987,7 @@ public final class UnpickV3Reader implements AutoCloseable {
                 }
                 char c = line.charAt(column);
                 switch (c) {
-                    case 'u':
+                    case 'u' -> {
                         do {
                             column++;
                         } while (column < line.length() && line.charAt(column) == 'u');
@@ -1066,19 +1001,16 @@ public final class UnpickV3Reader implements AutoCloseable {
                             }
                             column++;
                         }
-                        break;
-                    case 'b': case 't': case 'n': case 'f': case 'r': case '"': case '\'': case '\\':
-                        column++;
-                        break;
-                    case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7':
+                    }
+                    case 'b', 't', 'n', 'f', 'r', '"', '\'', '\\' -> column++;
+                    case '0', '1', '2', '3', '4', '5', '6', '7' -> {
                         column++;
                         int maxOctalDigits = c <= '3' ? 3 : 2;
                         for (int i = 1; i < maxOctalDigits && column < line.length() && (c = line.charAt(column)) >= '0' && c <= '7'; i++) {
                             column++;
                         }
-                        break;
-                    default:
-                        throw parseErrorInToken("Illegal escape sequence \\" + c);
+                    }
+                    default -> throw parseErrorInToken("Illegal escape sequence \\" + c);
                 }
             } else {
                 column++;
