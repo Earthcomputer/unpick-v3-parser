@@ -6,11 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Test;
@@ -39,7 +36,7 @@ public final class TestSyntax {
                 classNames.add(targetField.className());
             }
         });
-        assertEquals(Arrays.asList("Foo", "foo.Bar", "foo.Bar$Baz", "foo.Bar$1"), classNames);
+        assertEquals(List.of("Foo", "foo.Bar", "foo.Bar$Baz", "foo.Bar$1"), classNames);
     }
 
     @Test
@@ -58,7 +55,7 @@ public final class TestSyntax {
                 }
             }
         });
-        assertEquals(Arrays.asList(DataType.BYTE, DataType.SHORT, DataType.INT, DataType.LONG, DataType.FLOAT, DataType.DOUBLE, DataType.CHAR, DataType.STRING), dataTypes);
+        assertEquals(List.of(DataType.BYTE, DataType.SHORT, DataType.INT, DataType.LONG, DataType.FLOAT, DataType.DOUBLE, DataType.CHAR, DataType.STRING), dataTypes);
     }
 
     @Test
@@ -70,7 +67,7 @@ public final class TestSyntax {
                 methodNames.add(targetMethod.methodName());
             }
         });
-        assertEquals(Arrays.asList("baz", "<init>", "<clinit>"), methodNames);
+        assertEquals(List.of("baz", "<init>", "<clinit>"), methodNames);
     }
 
     @Test
@@ -84,13 +81,9 @@ public final class TestSyntax {
                 returnGroups.add(targetMethod.returnGroup());
             }
         });
-        Map<Integer, String> expectedParamGroups1 = new HashMap<>();
-        expectedParamGroups1.put(0, "a");
-        expectedParamGroups1.put(1, "b");
-        expectedParamGroups1.put(69, "c");
-        Map<Integer, String> expectedParamGroups2 = new HashMap<>();
-        expectedParamGroups2.put(0, "e");
-        assertEquals(Arrays.asList(Collections.emptyMap(), expectedParamGroups1, expectedParamGroups2, Collections.emptyMap()), paramGroups);
+        Map<Integer, String> expectedParamGroups1 = Map.of(0, "a", 1, "b", 69, "c");
+        Map<Integer, String> expectedParamGroups2 = Map.of(0, "e");
+        assertEquals(List.of(Map.of(), expectedParamGroups1, expectedParamGroups2, Map.of()), paramGroups);
         assertEquals(Arrays.asList(null, "d", null, "f"), returnGroups);
     }
 
@@ -157,7 +150,7 @@ public final class TestSyntax {
                         }
                     });
                     return constants.stream();
-                }).collect(Collectors.toList()));
+                }).toList());
             }
         });
         assertEquals(Arrays.asList(
@@ -191,7 +184,7 @@ public final class TestSyntax {
                 null,
                 null
         ), groupNames);
-        assertEquals(Arrays.asList(
+        assertEquals(List.of(
                 false,
                 false,
                 false,
@@ -222,7 +215,7 @@ public final class TestSyntax {
                 false,
                 false
         ), groupFlags);
-        assertEquals(Arrays.asList(
+        assertEquals(List.of(
                 DataType.INT,
                 DataType.INT,
                 DataType.INT,
@@ -253,36 +246,36 @@ public final class TestSyntax {
                 DataType.INT,
                 DataType.INT
         ), groupDataTypes);
-        assertEquals(Arrays.asList(
-                Collections.emptyList(),
-                Collections.singletonList(0),
-                Collections.singletonList(0),
-                Collections.singletonList(0),
-                Collections.singletonList(0),
-                Arrays.asList(0, 1.0),
-                Arrays.asList(0, 1.0),
-                Arrays.asList(0, 1.0),
-                Arrays.asList(0, 1.0),
-                Collections.singletonList(""),
-                Collections.singletonList(""),
-                Collections.singletonList("Foo.bar"),
-                Collections.singletonList("Foo.bar"),
-                Collections.singletonList(0),
-                Collections.singletonList(0),
-                Collections.emptyList(),
-                Collections.emptyList(),
-                Collections.emptyList(),
-                Collections.emptyList(),
-                Collections.emptyList(),
-                Collections.singletonList(0),
-                Collections.emptyList(),
-                Collections.emptyList(),
-                Collections.emptyList(),
-                Collections.emptyList(),
-                Collections.singletonList(0),
-                Collections.singletonList(0),
-                Collections.singletonList(0),
-                Collections.emptyList()
+        assertEquals(List.of(
+                List.of(),
+                List.of(0),
+                List.of(0),
+                List.of(0),
+                List.of(0),
+                List.of(0, 1.0),
+                List.of(0, 1.0),
+                List.of(0, 1.0),
+                List.of(0, 1.0),
+                List.of(""),
+                List.of(""),
+                List.of("Foo.bar"),
+                List.of("Foo.bar"),
+                List.of(0),
+                List.of(0),
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of(0),
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of(0),
+                List.of(0),
+                List.of(0),
+                List.of()
         ), groupConstants);
         assertEquals(Arrays.asList(
                 null,
@@ -317,23 +310,23 @@ public final class TestSyntax {
         ), groupFormats);
         for (int i = 0; i < groupPackageScopes.size(); i++) {
             if (i == 25) {
-                assertEquals(Collections.singletonList("foo.bar"), groupPackageScopes.get(i));
+                assertEquals(List.of("foo.bar"), groupPackageScopes.get(i));
             } else if (i == 28) {
-                assertEquals(Arrays.asList("foo.bar", "baz.quux"), groupPackageScopes.get(i));
+                assertEquals(List.of("foo.bar", "baz.quux"), groupPackageScopes.get(i));
             } else {
                 assertTrue(groupPackageScopes.get(i).isEmpty());
             }
         }
         for (int i = 0; i < groupClassScopes.size(); i++) {
             if (i == 26) {
-                assertEquals(Collections.singletonList("foo.Bar"), groupClassScopes.get(i));
+                assertEquals(List.of("foo.Bar"), groupClassScopes.get(i));
             } else {
                 assertTrue(groupClassScopes.get(i).isEmpty());
             }
         }
         for (int i = 0; i < groupMethodScopes.size(); i++) {
             if (i == 27) {
-                assertEquals(Collections.singletonList("foo.Bar.baz()V"), groupMethodScopes.get(i));
+                assertEquals(List.of("foo.Bar.baz()V"), groupMethodScopes.get(i));
             } else {
                 assertTrue(groupMethodScopes.get(i).isEmpty());
             }

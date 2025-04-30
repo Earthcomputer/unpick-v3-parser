@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -30,7 +29,7 @@ public final class TestTokens {
                 groupNames.add(groupDefinition.name());
             }
         });
-        assertEquals(Arrays.asList("a", "A", "_", "$", "az0_$G"), groupNames);
+        assertEquals(List.of("a", "A", "_", "$", "az0_$G"), groupNames);
     }
 
     @Test
@@ -49,7 +48,7 @@ public final class TestTokens {
                 }
             }
         });
-        assertEquals(Arrays.asList(0.0, 1.0, 2.0, 4.5, 1.0e5, 1.0e5, 1.0e-5, 1.0e5, 1.0e10, Double.MAX_VALUE), exprDoubles);
+        assertEquals(List.of(0.0, 1.0, 2.0, 4.5, 1.0e5, 1.0e5, 1.0e-5, 1.0e5, 1.0e10, Double.MAX_VALUE), exprDoubles);
     }
 
     @Test
@@ -68,7 +67,7 @@ public final class TestTokens {
                 }
             }
         });
-        assertEquals(Arrays.asList(0.0f, 1.0f, 2.0f, 1.0e5f, 1.0e-5f, 1.0e10f, Float.MAX_VALUE), exprFloats);
+        assertEquals(List.of(0.0f, 1.0f, 2.0f, 1.0e5f, 1.0e-5f, 1.0e10f, Float.MAX_VALUE), exprFloats);
     }
 
     @Test
@@ -90,8 +89,8 @@ public final class TestTokens {
                 }
             }
         });
-        assertEquals(Arrays.asList(0, 1, 2, Integer.MAX_VALUE, Integer.MIN_VALUE, 0x9ff, 0xffffffff, 0b1010, 0xffffffff, 511, 0xffffffff), exprInts);
-        assertEquals(Arrays.asList(10, 10, 10, 10, 10, 16, 16, 2, 2, 8, 8), exprRadixes);
+        assertEquals(List.of(0, 1, 2, Integer.MAX_VALUE, Integer.MIN_VALUE, 0x9ff, 0xffffffff, 0b1010, 0xffffffff, 511, 0xffffffff), exprInts);
+        assertEquals(List.of(10, 10, 10, 10, 10, 16, 16, 2, 2, 8, 8), exprRadixes);
     }
 
     @Test
@@ -113,8 +112,8 @@ public final class TestTokens {
                 }
             }
         });
-        assertEquals(Arrays.asList(0L, 1L, 2L, Long.MAX_VALUE, Long.MIN_VALUE, 0x9ffL, 0xffffffffffffffffL, 0b1010L, 0xffffffffffffffffL, 511L, 0xffffffffffffffffL), exprLongs);
-        assertEquals(Arrays.asList(10, 10, 10, 10, 10, 16, 16, 2, 2, 8, 8), exprRadixes);
+        assertEquals(List.of(0L, 1L, 2L, Long.MAX_VALUE, Long.MIN_VALUE, 0x9ffL, 0xffffffffffffffffL, 0b1010L, 0xffffffffffffffffL, 511L, 0xffffffffffffffffL), exprLongs);
+        assertEquals(List.of(10, 10, 10, 10, 10, 16, 16, 2, 2, 8, 8), exprRadixes);
     }
 
     @Test
@@ -133,7 +132,7 @@ public final class TestTokens {
                 }
             }
         });
-        List<Character> expectedChars = Arrays.asList('a', '"', '§', '\b', '\t', '\n', '\f', '\r', '\'', '"', '\\', '\0', '\12', '\123', '\74');
+        List<Character> expectedChars = List.of('a', '"', '§', '\b', '\t', '\n', '\f', '\r', '\'', '"', '\\', '\0', '\12', '\123', '\74');
         assertEquals(expectedChars, exprChars);
     }
 
@@ -153,7 +152,7 @@ public final class TestTokens {
                 }
             }
         });
-        assertEquals(Arrays.asList("Hello '§\b\t\n\f\r'\"\\\0\12\123\1234\74\747\08", ""), exprStrings);
+        assertEquals(List.of("Hello '§\b\t\n\f\r'\"\\\0\12\123\1234\74\747\08", ""), exprStrings);
     }
 
     @Test
@@ -165,7 +164,7 @@ public final class TestTokens {
                 fieldDescriptors.add(targetField.fieldDesc());
             }
         });
-        assertEquals(Arrays.asList("B", "C", "D", "F", "I", "J", "S", "Z", "Ljava/lang/String;", "[I", "[[Ljava/lang/String;"), fieldDescriptors);
+        assertEquals(List.of("B", "C", "D", "F", "I", "J", "S", "Z", "Ljava/lang/String;", "[I", "[[Ljava/lang/String;"), fieldDescriptors);
     }
 
     @Test
@@ -177,7 +176,7 @@ public final class TestTokens {
                 methodDescriptors.add(targetMethod.methodDesc());
             }
         });
-        assertEquals(Arrays.asList("()V", "([[[Ljava/lang/Object;IIIDDZZLjava/lang/Object;[[[[[I)Ljava/lang/Thread;"), methodDescriptors);
+        assertEquals(List.of("()V", "([[[Ljava/lang/Object;IIIDDZZLjava/lang/Object;[[[[[I)Ljava/lang/Thread;"), methodDescriptors);
     }
 
     @Test

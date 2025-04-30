@@ -1,7 +1,6 @@
 package net.earthcomputer.unpickv3parser;
 
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import net.earthcomputer.unpickv3parser.tree.GroupDefinition;
@@ -37,21 +36,21 @@ public abstract class UnpickV3Remapper extends UnpickV3Visitor {
                         return getClassesInPackage(packageScope.packageName()).stream()
                             .map((className) -> new GroupScope.Class(mapClassName(className)));
                     } else if (scope instanceof GroupScope.Class classScope) {
-                        return Stream.of(new GroupScope.Class(mapClassName(classScope.className())));
+                        return Stream.<GroupScope>of(new GroupScope.Class(mapClassName(classScope.className())));
                     } else if (scope instanceof GroupScope.Method methodScope) {
                         String className = mapClassName(methodScope.className());
                         String methodName = mapMethodName(methodScope.className(), methodScope.methodName(), methodScope.methodDesc());
                         String methodDesc = mapDescriptor(methodScope.methodDesc());
-                        return Stream.of(new GroupScope.Method(className, methodName, methodDesc));
+                        return Stream.<GroupScope>of(new GroupScope.Method(className, methodName, methodDesc));
                     } else {
                         throw new AssertionError("Unknown group scope type: " + scope.getClass().getName());
                     }
                 })
-                .collect(Collectors.toList());
+                .toList();
 
         List<Expression> constants = groupDefinition.constants().stream()
                 .map(constant -> constant.transform(new ExpressionRemapper()))
-                .collect(Collectors.toList());
+                .toList();
 
         downstream.visitGroupDefinition(GroupDefinition.Builder.from(groupDefinition).setScopes(scopes).setConstants(constants).build());
     }

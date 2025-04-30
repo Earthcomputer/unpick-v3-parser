@@ -4,9 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -17,20 +14,21 @@ import net.earthcomputer.unpickv3parser.UnpickV3Remapper;
 import net.earthcomputer.unpickv3parser.UnpickV3Writer;
 
 public final class TestRemapper {
-    private static final Map<String, List<String>> PACKAGES = new HashMap<>();
-    private static final Map<String, String> CLASSES = new HashMap<>();
-    private static final Map<MemberKey, String> FIELDS = new HashMap<>();
-    private static final Map<MemberKey, String> METHODS = new HashMap<>();
-
-    static {
-        PACKAGES.put("unmapped.foo", Arrays.asList("unmapped.foo.A", "unmapped.foo.B"));
-        PACKAGES.put("unmapped.bar", Collections.singletonList("unmapped.bar.C"));
-        CLASSES.put("unmapped.foo.A", "mapped.foo.X");
-        CLASSES.put("unmapped.foo.B", "mapped.bar.Y");
-        CLASSES.put("unmapped.bar.C", "mapped.bar.Z");
-        FIELDS.put(new MemberKey("unmapped.foo.B", "baz", "I"), "quux");
-        METHODS.put(new MemberKey("unmapped.foo.B", "foo2", "(Lunmapped/foo/A;)V"), "bar2");
-    }
+    private static final Map<String, List<String>> PACKAGES = Map.of(
+            "unmapped.foo", List.of("unmapped.foo.A", "unmapped.foo.B"),
+            "unmapped.bar", List.of("unmapped.bar.C")
+    );
+    private static final Map<String, String> CLASSES = Map.of(
+            "unmapped.foo.A", "mapped.foo.X",
+            "unmapped.foo.B", "mapped.bar.Y",
+            "unmapped.bar.C", "mapped.bar.Z"
+    );
+    private static final Map<MemberKey, String> FIELDS = Map.of(
+            new MemberKey("unmapped.foo.B", "baz", "I"), "quux"
+    );
+    private static final Map<MemberKey, String> METHODS = Map.of(
+            new MemberKey("unmapped.foo.B", "foo2", "(Lunmapped/foo/A;)V"), "bar2"
+    );
 
     @Test
     public void testTargetField() throws IOException {
@@ -105,7 +103,7 @@ public final class TestRemapper {
 
                 @Override
                 protected List<String> getClassesInPackage(String pkg) {
-                    return PACKAGES.getOrDefault(pkg, Collections.emptyList());
+                    return PACKAGES.getOrDefault(pkg, List.of());
                 }
 
                 @Override
