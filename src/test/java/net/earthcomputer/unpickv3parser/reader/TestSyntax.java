@@ -110,15 +110,12 @@ public final class TestSyntax {
                 List<String> classScopes = new ArrayList<>();
                 List<String> methodScopes = new ArrayList<>();
                 for (GroupScope scope : groupDefinition.scopes()) {
-                    if (scope instanceof GroupScope.Package packageScope) {
-                        packageScopes.add(packageScope.packageName());
-                    } else if (scope instanceof GroupScope.Class classScope) {
-                        classScopes.add(classScope.className());
-                    } else if (scope instanceof GroupScope.Method methodScope) {
-                        methodScopes.add(methodScope.className() + "." + methodScope.methodName() + methodScope.methodDesc());
-                    } else {
-                        throw new AssertionError("Unknown scope type: " + scope.getClass().getName());
-                    }
+                    @SuppressWarnings("ConstantValue")
+                    boolean ignored = switch (scope) {
+                        case GroupScope.Package(String packageName) -> packageScopes.add(packageName);
+                        case GroupScope.Class(String className) -> classScopes.add(className);
+                        case GroupScope.Method(String className, String methodName, String methodDesc) -> methodScopes.add(className + "." + methodName + methodDesc);
+                    };
                 }
                 groupPackageScopes.add(packageScopes);
                 groupClassScopes.add(classScopes);
@@ -129,19 +126,15 @@ public final class TestSyntax {
                         @Override
                         public void visitLiteralExpression(LiteralExpression literalExpression) {
                             Literal constant = literalExpression.literal;
-                            if (constant instanceof Literal.Integer integerLiteral) {
-                                constants.add(integerLiteral.value());
-                            } else if (constant instanceof Literal.Long longLiteral) {
-                                constants.add(longLiteral.value());
-                            } else if (constant instanceof Literal.Float floatLiteral) {
-                                constants.add(floatLiteral.value());
-                            } else if (constant instanceof Literal.Double doubleLiteral) {
-                                constants.add(doubleLiteral.value());
-                            } else if (constant instanceof Literal.String stringLiteral) {
-                                constants.add(stringLiteral.value());
-                            } else {
-                                throw new AssertionError("Unexpected constant key type: " + constant.getClass().getName());
-                            }
+                            @SuppressWarnings("ConstantValue")
+                            boolean ignored = switch (constant) {
+                                case Literal.Integer(int value, int ignored1) -> constants.add(value);
+                                case Literal.Long(long value, int ignored1) -> constants.add(value);
+                                case Literal.Float(float value) -> constants.add(value);
+                                case Literal.Double(double value) -> constants.add(value);
+                                case Literal.Character(char value) -> constants.add(value);
+                                case Literal.String(String value) -> constants.add(value);
+                            };
                         }
 
                         @Override

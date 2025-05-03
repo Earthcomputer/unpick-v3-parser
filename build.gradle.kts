@@ -10,11 +10,11 @@ group = "net.earthcomputer"
 version = "1.0-SNAPSHOT"
 
 tasks.withType<JavaCompile> {
-    options.release.set(17)
+    options.release.set(21)
 }
 
 tasks.withType<Javadoc> {
-    options.source = "17"
+    options.source = "21"
 }
 
 repositories {
