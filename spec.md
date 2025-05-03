@@ -180,7 +180,7 @@ It may be useful to perform the following steps for semantic verification of unp
 - For each scope, validate that that scope points to a package, class, or method that exists.
 - For each field expression, validate that it references an existing field of the (possibly implicit) type and staticness specified in the unpick file.
     - Also check that this field is `final` and is initialized to a compile time constant (JLS §15.28).
-    - If the field expression is a wildcard field expression, validate that it has at least one matching field (see above). 
+    - If the field expression is a wildcard field expression, validate that it has at least one matching field (see above).
 - Evaluate each expression according to the rules of the Java language.
     - For each occurrence of the `/` and `%` operators, validate that if both sides of the operator are integers, the right hand side does not evaluate to 0.
     - Check that every expression in each group does not evaluate to the same value as another expression in the same group with the same scope.
@@ -191,7 +191,7 @@ It may be useful to perform the following steps for semantic verification of unp
 ## Application
 Note that this section is only one example of how constant uninlining could be implemented with these files. Implementations are free to uninline in less or more places than specified here or to use different techniques. This section is meant to give a feel for how the file format is supposed to be interpreted and reasoned about, not to dictate how the implementation is supposed to look.
 
-Following is a description of an algorithm to uninline constants in a method at the source code level. In practice it may be undesirable to only uninline a single method in isolation, due to the existence of inner methods (via anonymous or local classes).
+Following is a description of an algorithm to uninline constants in a method at the source code level. In practice it may be undesirable to only uninline a single method in isolation, due to the existence of inner methods (via anonymous or local classes), and parts of the method which is outside the body in the source code but inside in the bytecode (e.g. field assignments in both `<init>` and `<clinit>`).
 
 ### Identify targets
 Every expression and sub-expression in the syntax tree of the method body is associated to a group. In addition, every parameter and local variable is associated to a group. All expressions and variables are initially assigned to the default group. Then:
@@ -246,3 +246,15 @@ For each literal expression, field access expression, and class object access ex
     - Otherwise, replace the literal expression with `expr1 | expr2 | ... | residual`, where `expr1`, `expr2`, etc are the expressions specified by the substitutions in the positive set. Do not include the residual if it is 0, otherwise apply the format of the group to the residual if specified.
 - If the literal remains unsubstituted, apply the format of the group to the literal.
 - If the substituted expression is directly inside a cast expression, and the type (JLS §15) of the substituted expression is equal to the type of the cast expression, or is convertible to it via widening primitive conversion (JLS §5.1.2), then the cast *may* be replaced by the substituted expression. The cast cannot be replaced if it changes semantics, for example by changing the overload of a method call. A cast may also need to be added for the same reason.
+
+### A note on field initializers
+An unpick implementation must be careful not to substitute constants in a field initializer in a way that would cause the code not to compile, or the field to no longer be a constant expression. This involves:
+- Not referencing fields that are declared later in the same class.
+- Not creating a cyclical reference of fields.
+
+A simple way to circumvent the issue is to not substitute constants in a field initializer if the field being initialized is a constant, or if the substituted expression contains field expressions referencing fields that are further down in the same class.
+
+If an unpick implementation wishes to go further, then the problems may be resolved by applying a different constant group to the offending field initializer than would normally be applied:
+- Constants from a wider scope may instead be applied. For example, if substituting a constant in the class scope would lead to a cyclical reference, but a constant from the global scope is also applicable and would not lead to a cyclical reference, then the constant from the global scope can be applied.
+- If the group is not the default group, then the default group can also be attempted.
+- If the group is the default group, then a constant for a wider but still compatible data type could be applied, provided that constant is not marked as `@strict`.
