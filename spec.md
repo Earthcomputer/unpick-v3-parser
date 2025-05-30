@@ -142,6 +142,7 @@ Whitespace is not part of the token stream unless it is part of the `<Indent>` t
     - The `@strict` attribute causes the group to only be applied to literals of the exact type, as explained above.
     - The `@scope` attribute adds a restriction on which literals are subject to replacement by the constant replacements in this group declaration. Only literals within the given package, class, or method can be replaced with these constants.
         - Multiple `@scope` declarations can appear on a group definition. In this case, the scopes are ORed together, such that a literal can appear in any of the given scopes to be replaced by a listed constant replacement.
+        - Package scopes are not recursive; subpackages are not included. For example, a package scope for `foo` includes the class `foo.A` but not `foo.bar.A`. This is because the Java language and JVM do not treat packages as a hierarchy; subpackage relationships exist only in the directory structure, not in the language or runtime semantics.
 - It is an error for the same group to specify two constants that evaluate (see below) to the same value in the same scope.
     - If the same group specifies the same constant but at different scopes, the most specific scope takes precedence.
 - Each expression must evaluate (see below) to the group data type, or be convertible to the group data type via widening primitive conversion (JLS §5.1.2).
