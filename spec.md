@@ -176,6 +176,17 @@ Whitespace is not part of the token stream unless it is part of the `<Indent>` t
 #### Class Names
 - Class names use a class' binary name (JLS §13.1), which uses `.` to separate package elements and `$` to separate inner class names from outer class names. This format was chosen over the internal name to avoid potential confusion with the `/` division operator.
 
+### Doc Comments
+It may be useful to add documentation to named groups. By convention, doc comments are a series of comments before a group definition starting with `#:`. Other than the comment prefix, the syntax is the same as for Javadoc comments.
+
+For example:
+```
+#: An ID for a level event type.
+#: @see net.minecraft.world.level.LevelAccessor#levelEvent
+group int LevelEvents
+    net.minecraft.world.level.block.LevelEvent.*
+```
+
 ## Semantic Verification
 It may be useful to perform the following steps for semantic verification of unpick v3 files:
 - For each scope, validate that that scope points to a package, class, or method that exists.
