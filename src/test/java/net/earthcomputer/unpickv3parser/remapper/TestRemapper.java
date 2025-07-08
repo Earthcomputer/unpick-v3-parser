@@ -78,6 +78,11 @@ public final class TestRemapper {
         test("group int\n\t@scope method mapped.bar.Y bar2 (Lmapped/foo/X;)V", "group int\n\t@scope method unmapped.foo.B foo2 (Lunmapped/foo/A;)V");
     }
 
+    @Test
+    public void testDocs() throws IOException {
+        test("#: test\ngroup int", "#: test\ngroup int");
+    }
+
     private static void test(String expectedRemapped, String original) throws IOException {
         expectedRemapped = "unpick v3\n\n" + expectedRemapped + "\n";
         original = "unpick v3\n\n" + original + "\n";
