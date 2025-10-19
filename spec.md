@@ -1,15 +1,6 @@
-## Improvements over V2:
-- Ability to uninline constants globally (e.g. `Mth.PI`).
-    - Also the ability to restrict this to the scope of a package, class, or method (e.g. `ClientboundCustomPayloadPacket.MAX_PAYLOAD_SIZE`).
-- Ability to uninline mathematical expressions as well as constants (e.g. `Mth.PI / 3`, `LENGTH - 1`).
-- Ability to specify wildcards to uninline all constants in a class.
-- Ability to specify the radix of integers (decimal, hex, binary, or octal).
-    - This is not strictly constant uninlining but still fits within the broad category of cleaning up constant literals in decompiled code.
-- Ability to specify whether an integer should be formatted as a char in decompiled code.
-
-## Example V3 file:
+## Example V4 file:
 ```
-unpick v3
+unpick v4
 
 # apply to floats in the default group globally
 group float
@@ -44,13 +35,15 @@ target_method net.minecraft.client.gui.GuiGraphics fill (IIIII)V
 target_method net.minecraft.util.ARGB color (IIII)I
     return ARGBColor
 
+target_field net.minecraft.core.particles.ColorParticleOption color I ARGBColor
+
 # apply to ints with the group "SetBlockFlag"
 group int SetBlockFlag
     @flags
     net.minecraft.world.level.block.Block.UPDATE_ALL
     net.minecraft.world.level.block.Block.UPDATE_NEIGHBORS
 
-target_field net.minecraft.core.particles.ColorParticleOption color I ARGBColor
+target_annotation net.minecraft.world.level.block.Block$UpdateFlags SetBlockFlag
 ```
 
 ## Specification
@@ -81,8 +74,8 @@ Whitespace is not part of the token stream unless it is part of the `<Indent>` t
 ### File structure
 ```
 <UnpickV3File> ::= <VersionMarker> (<NewLine> <Item>)*
-<VersionMarker> ::= "unpick" "v3"
-<Item> ::= <GroupDefinition> | <TargetMethod> | <TargetField>
+<VersionMarker> ::= "unpick" "v4"
+<Item> ::= <GroupDefinition> | <TargetMethod> | <TargetField> | <TargetAnnotation>
 
 <GroupDefinition> ::= "group" <DataType> (<Identifier>)? (<NewLine> <Indent> <GroupAttribute>)* (<NewLine> <Indent> <GroupConst>)*
 
@@ -119,6 +112,8 @@ Whitespace is not part of the token stream unless it is part of the `<Indent>` t
 <TargetMethodReturn> ::= "return" <Identifier>
 
 <TargetField> ::= "target_field" <ClassName> <Identifier> <ClassDescriptor> <Identifier>
+
+<TargetAnnotation> ::= "target_annotation" <ClassName> <Identifier>
 
 <DataType> ::= "byte" | "short" | "int" | "long" | "float" | "double" | "char" | "String" | "Class"
 <ClassName> ::= (<Identifier> ".")* <Identifier>
@@ -173,6 +168,7 @@ Whitespace is not part of the token stream unless it is part of the `<Indent>` t
     - `byte`, `short`, `int`, `long`, `float`, and `double` are all compatible with each other.
     - `char` is compatible with `byte`, `short`, `int`, and `long`.
     - `String` and `Class` are only compatible with themselves.
+- Target annotations act as if there was a target for the group specified for each location the annotation is present in the target code.
 #### Class Names
 - Class names use a class' binary name (JLS §13.1), which uses `.` to separate package elements and `$` to separate inner class names from outer class names. This format was chosen over the internal name to avoid potential confusion with the `/` division operator.
 
@@ -197,7 +193,7 @@ It may be useful to perform the following steps for semantic verification of unp
     - For each occurrence of the `/` and `%` operators, validate that if both sides of the operator are integers, the right hand side does not evaluate to 0.
     - Check that every expression in each group does not evaluate to the same value as another expression in the same group with the same scope.
     - Check that every expression evaluates to a value of a compatible type to the group type (see above).
-- Check the existence of target fields and methods.
+- Check the existence of target fields, methods, and annotations.
     - Check that target parameters are not out of bounds.
 
 ## Application
@@ -207,6 +203,9 @@ Following is a description of an algorithm to uninline constants in a method at 
 
 ### Identify targets
 Every expression and sub-expression in the syntax tree of the method body is associated to a group. In addition, every parameter and local variable is associated to a group. All expressions and variables are initially assigned to the default group. Then:
+
+#### Annotated elements
+For the purpose of identifying targets, all elements that are annotated with a target annotation in the unpick file are considered to be targets in their own right. This includes both referenced fields, method return types, and method parameters, and the return type and parameters of the enclosing method. It also includes local variables, which are not possible to otherwise target in an unpick file.
 
 #### Enclosing method parameters
 Search for if the enclosing method or any method it overrides or implements is a target method in the unpick file. For each target parameter, assign the group of that parameter in the method to the group specified in the unpick file.
@@ -270,3 +269,19 @@ If an unpick implementation wishes to go further, then the problems may be resol
 - Constants from a wider scope may instead be applied. For example, if substituting a constant in the class scope would lead to a cyclical reference, but a constant from the global scope is also applicable and would not lead to a cyclical reference, then the constant from the global scope can be applied.
 - If the group is not the default group, then the default group can also be attempted.
 - If the group is the default group, then a constant for a wider but still compatible data type could be applied, provided that constant is not marked as `@strict`.
+
+### Ideas for non-uninlining steps
+Unpick implementations may choose to perform additional post-processing steps that are not directly related to constant uninlining:
+- Add `@MagicConstant` as a meta-annotation to all annotations in a `target_annotation` directive, if applicable:
+  - If the group has exactly one uninlinable constant, and that constant is a field expression, and that field expression is a wildcard field expression, then:
+    - If the group has the `@flags` attribute, then use `@MagicConstant(flagsFromClass = <class of the field expression>)`.
+    - Otherwise, use `@MagicConstant(valueFromClass = <class of the field expression>)`.
+  - Otherwise, if the group is of type `String`, then use `@MagicConstant(stringValues = <array of expressions>)` (after expanding wildcards).
+  - Otherwise, if the group is of type `int` or `long`, then:
+    - If the group has the `@flags` attribute, then use `@MagicConstant(flags = <array of expressions>)` (after expanding wildcards).
+    - Otherwise, use `@MagicConstant(intValues = <array of expressions>)` (after expanding wildcards).
+  - Otherwise, the `@MagicConstant` annotation cannot be added.
+- Generate magic constant annotations for groups that do not have a `target_annotation` directive, if applicable:
+  - These new annotations may be named based on the group name and have Javadoc comments copied from the group definition.
+  - They may be annotated with `@MagicConstant` based on the same rules as above for `target_annotation`.
+  - This behavior may be opt-in or opt-out via a line in the doc comment (e.g. `#: @generate-annotation`), in which case if there is also a `target_annotation`, it may replace the target annotation in existing code.
