@@ -7,6 +7,7 @@ import java.util.function.Consumer;
 import net.earthcomputer.unpickv3parser.UnpickV3Writer;
 import net.earthcomputer.unpickv3parser.tree.DataType;
 import net.earthcomputer.unpickv3parser.tree.GroupDefinition;
+import net.earthcomputer.unpickv3parser.tree.TargetAnnotation;
 import net.earthcomputer.unpickv3parser.tree.TargetField;
 import net.earthcomputer.unpickv3parser.tree.TargetMethod;
 import net.earthcomputer.unpickv3parser.tree.UnpickV3Visitor;
@@ -23,6 +24,13 @@ public final class TestWriter {
 
     public static void testTargetMethod(String expected, TargetMethod targetMethod) {
         test("unpick v3\n\n" + expected + "\n", visitor -> visitor.visitTargetMethod(targetMethod));
+    }
+
+    public static void testTargetAnnotation(String expected, TargetAnnotation targetAnnotation) {
+        test("unpick v4\n\n" + expected + "\n", visitor -> {
+            visitor.visitHeader(4);
+            visitor.visitTargetAnnotation(targetAnnotation);
+        });
     }
 
     public static void testExpression(String expected, Expression expression) {

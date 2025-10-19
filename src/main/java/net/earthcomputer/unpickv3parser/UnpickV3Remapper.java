@@ -5,6 +5,7 @@ import java.util.stream.Stream;
 
 import net.earthcomputer.unpickv3parser.tree.GroupDefinition;
 import net.earthcomputer.unpickv3parser.tree.GroupScope;
+import net.earthcomputer.unpickv3parser.tree.TargetAnnotation;
 import net.earthcomputer.unpickv3parser.tree.TargetField;
 import net.earthcomputer.unpickv3parser.tree.TargetMethod;
 import net.earthcomputer.unpickv3parser.tree.UnpickV3Visitor;
@@ -58,6 +59,11 @@ public abstract class UnpickV3Remapper extends UnpickV3Visitor {
     }
 
     @Override
+    public void visitHeader(int version) {
+        downstream.visitHeader(version);
+    }
+
+    @Override
     public void visitTargetField(TargetField targetField) {
         String className = mapClassName(targetField.className());
         String fieldName = mapFieldName(targetField.className(), targetField.fieldName(), targetField.fieldDesc());
@@ -71,6 +77,12 @@ public abstract class UnpickV3Remapper extends UnpickV3Visitor {
         String methodName = mapMethodName(targetMethod.className(), targetMethod.methodName(), targetMethod.methodDesc());
         String methodDesc = mapDescriptor(targetMethod.methodDesc());
         downstream.visitTargetMethod(new TargetMethod(className, methodName, methodDesc, targetMethod.paramGroups(), targetMethod.returnGroup()));
+    }
+
+    @Override
+    public void visitTargetAnnotation(TargetAnnotation targetAnnotation) {
+        String annotationName = mapClassName(targetAnnotation.annotationName());
+        downstream.visitTargetAnnotation(new TargetAnnotation(annotationName, targetAnnotation.groupName()));
     }
 
     protected abstract String mapClassName(String className);

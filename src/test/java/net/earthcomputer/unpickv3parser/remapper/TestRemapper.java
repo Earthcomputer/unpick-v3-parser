@@ -46,6 +46,11 @@ public final class TestRemapper {
     }
 
     @Test
+    public void testTargetAnnotation() throws IOException {
+        test("target_annotation mapped.bar.Y baz", "target_annotation unmapped.foo.B baz");
+    }
+
+    @Test
     public void testFieldExpression() throws IOException {
         test("group int\n\tmapped.bar.Y.quux", "group int\n\tunmapped.foo.B.baz");
     }
@@ -84,8 +89,8 @@ public final class TestRemapper {
     }
 
     private static void test(String expectedRemapped, String original) throws IOException {
-        expectedRemapped = "unpick v3\n\n" + expectedRemapped + "\n";
-        original = "unpick v3\n\n" + original + "\n";
+        expectedRemapped = "unpick v4\n\n" + expectedRemapped + "\n";
+        original = "unpick v4\n\n" + original + "\n";
 
         String remapped;
         try (UnpickV3Reader reader = new UnpickV3Reader(new StringReader(original))) {

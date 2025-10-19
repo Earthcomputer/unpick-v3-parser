@@ -1,4 +1,4 @@
-unpick v3
+unpick v4
 
 # apply to floats in the default group globally
 group float
@@ -33,10 +33,12 @@ target_method net.minecraft.client.gui.GuiGraphics fill (IIIII)V
 target_method net.minecraft.util.ARGB color (IIII)I
     return ARGBColor
 
+target_field net.minecraft.core.particles.ColorParticleOption color I ARGBColor
+
 # apply to ints with the group "SetBlockFlag"
 group int SetBlockFlag
     @flags
     net.minecraft.world.level.block.Block.UPDATE_ALL
     net.minecraft.world.level.block.Block.UPDATE_NEIGHBORS
 
-target_field net.minecraft.core.particles.ColorParticleOption color I ARGBColor
+target_annotation net.minecraft.world.level.block.Block$UpdateFlags SetBlockFlag

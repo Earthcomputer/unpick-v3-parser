@@ -17,6 +17,7 @@ import net.earthcomputer.unpickv3parser.tree.GroupDefinition;
 import net.earthcomputer.unpickv3parser.tree.GroupFormat;
 import net.earthcomputer.unpickv3parser.tree.GroupScope;
 import net.earthcomputer.unpickv3parser.tree.Literal;
+import net.earthcomputer.unpickv3parser.tree.TargetAnnotation;
 import net.earthcomputer.unpickv3parser.tree.TargetField;
 import net.earthcomputer.unpickv3parser.tree.TargetMethod;
 import net.earthcomputer.unpickv3parser.tree.UnpickV3Visitor;
@@ -85,6 +86,21 @@ public final class TestSyntax {
         Map<Integer, String> expectedParamGroups2 = Map.of(0, "e");
         assertEquals(List.of(Map.of(), expectedParamGroups1, expectedParamGroups2, Map.of()), paramGroups);
         assertEquals(Arrays.asList(null, "d", null, "f"), returnGroups);
+    }
+
+    @Test
+    public void testTargetAnnotation() throws IOException {
+        List<String> annotationClassNames = new ArrayList<>();
+        List<String> annotationGroups = new ArrayList<>();
+        TestReader.test("syntax/target_annotation", new UnpickV3Visitor() {
+            @Override
+            public void visitTargetAnnotation(TargetAnnotation targetAnnotation) {
+                annotationClassNames.add(targetAnnotation.annotationName());
+                annotationGroups.add(targetAnnotation.groupName());
+            }
+        });
+        assertEquals(List.of("foo.Bar"), annotationClassNames);
+        assertEquals(List.of("baz"), annotationGroups);
     }
 
     @Test
@@ -357,6 +373,11 @@ public final class TestSyntax {
     @Test
     public void testTargetMethodDuplicateReturn() throws IOException {
         TestReader.assertThrowsParseError("syntax/invalid/target_method_duplicate_return", 4, 5, "Specified return group twice");
+    }
+
+    @Test
+    public void testTargetAnnotationUnpickV3() throws IOException {
+        TestReader.assertThrowsParseError("syntax/invalid/target_annotation_unpick_v3", 3, 1, "Target annotations are not supported in unpick format version 3");
     }
 
     @Test
