@@ -42,9 +42,8 @@ public final class UnpickV3Writer extends UnpickV3Visitor {
 
     @Override
     public void visitHeader(int version) {
-        this.version = version;
-
         if (output == null) {
+            this.version = version;
             output = new StringBuilder("unpick v").append(version).append(LINE_SEPARATOR);
         }
     }
