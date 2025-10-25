@@ -43,6 +43,7 @@ group int SetBlockFlag
     net.minecraft.world.level.block.Block.UPDATE_ALL
     net.minecraft.world.level.block.Block.UPDATE_NEIGHBORS
 
+# treat anything annotated with @Block$UpdateFlags as values from the SetBlockFlag group
 target_annotation net.minecraft.world.level.block.Block$UpdateFlags SetBlockFlag
 ```
 
