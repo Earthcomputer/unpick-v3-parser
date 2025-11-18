@@ -1,4 +1,5 @@
 import com.diffplug.spotless.LineEnding
+import net.earthcomputer.unpickv3parser.retrofit.RetrofitTask
 
 plugins {
     id("java")
@@ -48,4 +49,10 @@ spotless {
         trimTrailingWhitespace()
         endWithNewline()
     }
+}
+
+val retrofitJar by tasks.creating(RetrofitTask::class) {
+    group = "build"
+    inputFile.set(tasks.jar.flatMap { it.archiveFile })
+    outputFile.set(layout.buildDirectory.file("libs/${base.archivesName.get()}-retrofitted-${version}.jar"))
 }
