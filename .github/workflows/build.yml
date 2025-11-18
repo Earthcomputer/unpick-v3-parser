@@ -12,4 +12,12 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - uses: gradle/wrapper-validation-action@v1
-      - run: ./gradlew build --stacktrace --warning-mode fail
+      - name: Download JDK 17
+        run: |
+          apt-get update
+          apt-get install -y wget ca-certificates
+          wget https://download.eclipse.org/temurin/17/latest/linux/x64/temurin-17-jdk.tar.gz
+          mkdir -p /opt/jdk17
+          tar -xf temurin-17-jdk.tar.gz -C /opt/jdk17 --strip-components=1
+          echo "JAVA17_HOME=/opt/jdk17" >> $GITHUB_ENV
+      - run: ./gradlew -Djava.17.home="$JAVA17_HOME" build retrofitJar --stacktrace --warning-mode fail
