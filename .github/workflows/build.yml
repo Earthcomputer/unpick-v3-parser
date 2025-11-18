@@ -16,8 +16,7 @@ jobs:
         run: |
           apt-get update
           apt-get install -y wget ca-certificates
-          wget https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.17%2B10/OpenJDK17U-jdk_aarch64_linux_hotspot_17.0.17_10.tar.gz
+          wget -q https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.17%2B10/OpenJDK17U-jdk_aarch64_linux_hotspot_17.0.17_10.tar.gz
           mkdir -p /opt/jdk17
           tar -xf OpenJDK17U-jdk_aarch64_linux_hotspot_17.0.17_10.tar.gz -C /opt/jdk17 --strip-components=1
-          echo "JAVA17_HOME=/opt/jdk17" >> $GITHUB_ENV
-      - run: ./gradlew -Djava.17.home="$JAVA17_HOME" build retrofitJar --stacktrace --warning-mode fail
+      - run: ./gradlew -Djava.17.home=/opt/jdk17 build retrofitJar --stacktrace --warning-mode fail
