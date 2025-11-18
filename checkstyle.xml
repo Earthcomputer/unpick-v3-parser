@@ -49,7 +49,7 @@
         <module name="UnusedImports"/>
 
         <module name="ImportOrder">
-            <property name="groups" value="java,javax,*,net.earthcomputer.unpickv3parser"/>
+            <property name="groups" value="java,javax,*,org.vineflower.unpick.parser"/>
             <property name="ordered" value="true"/>
             <property name="separated" value="true"/>
             <property name="option" value="top"/>

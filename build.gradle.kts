@@ -1,5 +1,5 @@
 import com.diffplug.spotless.LineEnding
-import net.earthcomputer.unpickv3parser.retrofit.RetrofitTask
+import org.vineflower.unpick.parser.retrofit.RetrofitTask
 
 plugins {
     id("java")
@@ -7,7 +7,7 @@ plugins {
     id("com.diffplug.spotless") version "7.0.2"
 }
 
-group = "net.earthcomputer"
+group = "org.vineflower"
 version = "1.0-SNAPSHOT"
 
 tasks.withType<JavaCompile> {
@@ -44,7 +44,7 @@ spotless {
 
     java {
         removeUnusedImports()
-        importOrder("java", "javax", "", "net.earthcomputer.unpickv3parser")
+        importOrder("java", "javax", "", "org.vineflower.unpick.parser")
         leadingTabsToSpaces(4)
         trimTrailingWhitespace()
         endWithNewline()
